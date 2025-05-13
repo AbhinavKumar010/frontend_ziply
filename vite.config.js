@@ -25,11 +25,25 @@ export default defineConfig({
     cors: true,
     hmr: {
       overlay: true
+    },
+    headers: {
+      'Content-Type': 'application/javascript',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
+    },
+    middlewareMode: false,
+    fs: {
+      strict: true,
+      allow: ['..']
     }
   },
   resolve: {
     alias: {
       '@': '/src'
     }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@mui/material', '@emotion/react', '@emotion/styled']
   }
 })
