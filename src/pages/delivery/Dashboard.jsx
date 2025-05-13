@@ -52,6 +52,50 @@ import { motion } from 'framer-motion';
 
 const drawerWidth = 280;
 
+const styles = {
+  gradientBackground: {
+    background: 'linear-gradient(135deg, #1976d2 0%, #64b5f6 100%)',
+    borderRadius: { xs: '0 0 16px 16px', sm: '0 0 24px 24px' },
+    boxShadow: '0 4px 20px rgba(25, 118, 210, 0.2)',
+  },
+  cardHover: {
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-8px)',
+      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+    }
+  },
+  statsCard: {
+    height: '100%',
+    borderRadius: '16px',
+    overflow: 'hidden',
+    position: 'relative',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-8px)',
+      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+    },
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '4px',
+      background: 'linear-gradient(90deg, #1976d2 0%, #64b5f6 100%)',
+    }
+  },
+  deliveryCard: {
+    borderRadius: '16px',
+    overflow: 'hidden',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-8px)',
+      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+    }
+  }
+};
+
 const DeliveryDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -180,57 +224,71 @@ const DeliveryDashboard = () => {
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      bgcolor: 'background.paper',
-      borderRight: '1px solid',
-      borderColor: 'divider'
+      background: 'linear-gradient(180deg, #1976d2 0%, #64b5f6 100%)',
     }}>
-      {/* Logo and Brand Section */}
       <Box sx={{ 
-        p: 2, 
+        p: 3, 
         display: 'flex', 
         alignItems: 'center', 
         gap: 2,
-        borderBottom: '1px solid',
-        borderColor: 'divider'
+        borderBottom: '1px solid rgba(255,255,255,0.1)'
       }}>
-        <BikeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-        <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+        <BikeIcon sx={{ fontSize: 40, color: 'white' }} />
+        <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
           ZIPLY Delivery
         </Typography>
       </Box>
 
-      {/* Navigation Menu */}
-      <List sx={{ flexGrow: 1, px: 2 }}>
-        {menuItems.map((item) => (
-          <ListItemButton
+      <List sx={{ flexGrow: 1, px: 2, mt: 2 }}>
+        {menuItems.map((item, index) => (
+          <motion.div
             key={item.text}
-            onClick={() => handleNavigation(item.path)}
-            sx={{
-              borderRadius: 2,
-              mb: 1,
-              '&:hover': {
-                bgcolor: 'action.hover',
-              },
-            }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
           >
-            <ListItemIcon sx={{ color: 'primary.main' }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItemButton>
+            <ListItemButton
+              onClick={() => handleNavigation(item.path)}
+              selected={selectedTab === item.path}
+              sx={{
+                borderRadius: 2,
+                mb: 1,
+                color: 'white',
+                '&:hover': {
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                },
+                '&.Mui-selected': {
+                  bgcolor: 'rgba(255,255,255,0.2)',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.25)',
+                  }
+                }
+              }}
+            >
+              <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>{item.icon}</ListItemIcon>
+              <ListItemText 
+                primary={item.text}
+                primaryTypographyProps={{
+                  fontWeight: selectedTab === item.path ? 600 : 400
+                }}
+              />
+            </ListItemButton>
+          </motion.div>
         ))}
       </List>
 
-      {/* Logout Section */}
-      <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+      <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <ListItemButton 
           onClick={handleLogout}
           sx={{
             borderRadius: 2,
+            color: 'white',
             '&:hover': {
-              bgcolor: 'error.lighter',
-            },
+              bgcolor: 'rgba(255,255,255,0.1)',
+            }
           }}
         >
-          <ListItemIcon sx={{ color: 'error.main' }}>
+          <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
             <LogoutIcon />
           </ListItemIcon>
           <ListItemText primary="Logout" />
@@ -414,7 +472,7 @@ const DeliveryDashboard = () => {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8f9fa' }}>
       {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
@@ -456,7 +514,7 @@ const DeliveryDashboard = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3 },
           width: { sm: `calc(100% - ${isDrawerOpen ? drawerWidth : 0}px)` },
           display: 'flex',
           flexDirection: 'column',
@@ -490,14 +548,15 @@ const DeliveryDashboard = () => {
                 edge="start"
                 onClick={handleDrawerToggle}
                 sx={{ 
+                  color: 'primary.main',
                   '&:hover': {
-                    backgroundColor: 'rgba(0,0,0,0.04)'
+                    backgroundColor: 'rgba(25, 118, 210, 0.04)'
                   }
                 }}
               >
                 <MenuIcon />
               </IconButton>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                 Delivery Dashboard
               </Typography>
             </Box>
@@ -510,7 +569,11 @@ const DeliveryDashboard = () => {
                   sx={{ 
                     width: 32, 
                     height: 32,
-                    bgcolor: 'primary.main'
+                    bgcolor: 'primary.main',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'scale(1.1)'
+                    }
                   }}
                 >
                   D
@@ -520,25 +583,32 @@ const DeliveryDashboard = () => {
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleProfileMenuClose}
+                PaperProps={{
+                  elevation: 3,
+                  sx: {
+                    borderRadius: 2,
+                    mt: 1.5
+                  }
+                }}
               >
                 <MenuItem onClick={() => navigate('/delivery/profile')}>
                   <ListItemIcon>
-                    <PersonIcon fontSize="small" />
+                    <PersonIcon fontSize="small" color="primary" />
                   </ListItemIcon>
                   Profile
                 </MenuItem>
                 <MenuItem onClick={() => navigate('/delivery/settings')}>
                   <ListItemIcon>
-                    <SettingsIcon fontSize="small" />
+                    <SettingsIcon fontSize="small" color="primary" />
                   </ListItemIcon>
                   Settings
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={handleLogout}>
                   <ListItemIcon>
-                    <LogoutIcon fontSize="small" />
+                    <LogoutIcon fontSize="small" color="error" />
                   </ListItemIcon>
-                  Logout
+                  <Typography color="error">Logout</Typography>
                 </MenuItem>
               </Menu>
             </Box>
@@ -558,15 +628,11 @@ const DeliveryDashboard = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                       >
-                        <Card sx={{ 
-                          height: '100%',
-                          borderRadius: 2,
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                        }}>
+                        <Card sx={styles.statsCard}>
                           <CardContent>
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                               <Box sx={{ 
-                                p: 1, 
+                                p: 1.5, 
                                 borderRadius: 2,
                                 bgcolor: `${stat.color}15`,
                                 color: stat.color,
@@ -574,11 +640,25 @@ const DeliveryDashboard = () => {
                               }}>
                                 {stat.icon}
                               </Box>
-                              <Typography color="textSecondary">
+                              <Typography 
+                                color="textSecondary"
+                                sx={{ 
+                                  fontWeight: 500,
+                                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                                }}
+                              >
                                 {stat.title}
                               </Typography>
                             </Box>
-                            <Typography variant="h4" component="div" sx={{ color: stat.color }}>
+                            <Typography 
+                              variant="h4" 
+                              component="div" 
+                              sx={{ 
+                                color: stat.color,
+                                fontWeight: 700,
+                                fontSize: { xs: '1.5rem', sm: '2rem' }
+                              }}
+                            >
                               {stat.value}
                             </Typography>
                           </CardContent>
@@ -588,7 +668,18 @@ const DeliveryDashboard = () => {
                   ))}
                 </Grid>
 
-                <Typography variant="h5" sx={{ mb: 2 }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    mb: 3,
+                    fontWeight: 600,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <DeliveryIcon color="primary" />
                   Active Deliveries
                 </Typography>
 
@@ -600,22 +691,41 @@ const DeliveryDashboard = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                       >
-                        <Card sx={{ 
-                          borderRadius: 2,
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                        }}>
+                        <Card sx={styles.deliveryCard}>
                           <CardContent>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              flexDirection: { xs: 'column', sm: 'row' },
+                              justifyContent: 'space-between', 
+                              alignItems: { xs: 'flex-start', sm: 'center' }, 
+                              gap: 2,
+                              mb: 2 
+                            }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Avatar
                                   src={delivery.image}
-                                  sx={{ width: 50, height: 50 }}
+                                  sx={{ 
+                                    width: { xs: 40, sm: 50 }, 
+                                    height: { xs: 40, sm: 50 },
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                  }}
                                 />
                                 <Box>
-                                  <Typography variant="h6">
+                                  <Typography 
+                                    variant="h6"
+                                    sx={{ 
+                                      fontSize: { xs: '1rem', sm: '1.1rem' },
+                                      fontWeight: 600
+                                    }}
+                                  >
                                     {delivery.orderNumber}
                                   </Typography>
-                                  <Typography color="textSecondary">
+                                  <Typography 
+                                    color="textSecondary"
+                                    sx={{ 
+                                      fontSize: { xs: '0.875rem', sm: '0.9rem' }
+                                    }}
+                                  >
                                     {delivery.customer}
                                   </Typography>
                                 </Box>
@@ -624,23 +734,55 @@ const DeliveryDashboard = () => {
                                 label={delivery.status}
                                 color={delivery.status === 'Picked Up' ? 'success' : 'warning'}
                                 icon={delivery.status === 'Picked Up' ? <CheckCircleIcon /> : <PendingIcon />}
+                                sx={{ 
+                                  fontWeight: 500,
+                                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                                }}
                               />
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                              <LocationIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                              <Typography color="textSecondary">
+                            <Box sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              mb: 2,
+                              gap: 1
+                            }}>
+                              <LocationIcon sx={{ color: 'text.secondary' }} />
+                              <Typography 
+                                color="textSecondary"
+                                sx={{ 
+                                  fontSize: { xs: '0.875rem', sm: '0.9rem' }
+                                }}
+                              >
                                 {delivery.address}
                               </Typography>
                             </Box>
-                            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                            <Typography 
+                              variant="body2" 
+                              color="textSecondary" 
+                              sx={{ 
+                                mb: 2,
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                              }}
+                            >
                               {delivery.time}
                             </Typography>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              gap: 2,
+                              flexDirection: { xs: 'column', sm: 'row' }
+                            }}>
                               <Button
                                 variant="contained"
                                 color="primary"
                                 fullWidth
                                 onClick={() => handleNavigation(`delivery/${delivery.id}`)}
+                                sx={{
+                                  borderRadius: '8px',
+                                  py: 1,
+                                  fontSize: { xs: '0.875rem', sm: '0.9rem' },
+                                  textTransform: 'none',
+                                  fontWeight: 600
+                                }}
                               >
                                 View Details
                               </Button>
@@ -650,6 +792,13 @@ const DeliveryDashboard = () => {
                                 fullWidth
                                 startIcon={<MapIcon />}
                                 onClick={() => handleNavigateToDelivery(delivery.address)}
+                                sx={{
+                                  borderRadius: '8px',
+                                  py: 1,
+                                  fontSize: { xs: '0.875rem', sm: '0.9rem' },
+                                  textTransform: 'none',
+                                  fontWeight: 600
+                                }}
                               >
                                 Navigate
                               </Button>
@@ -664,7 +813,7 @@ const DeliveryDashboard = () => {
             )}
 
             {selectedTab === 'profile' && (
-              <Card sx={{ p: 3 }}>
+              <Box sx={{ mt: 2 }}>
                 <Typography variant="h5" sx={{ mb: 3 }}>Profile</Typography>
                 <Button
                   variant="contained"
@@ -673,11 +822,11 @@ const DeliveryDashboard = () => {
                 >
                   Edit Profile
                 </Button>
-              </Card>
+              </Box>
             )}
 
             {selectedTab === 'settings' && (
-              <Card sx={{ p: 3 }}>
+              <Box sx={{ mt: 2 }}>
                 <Typography variant="h5" sx={{ mb: 3 }}>Settings</Typography>
                 <Button
                   variant="contained"
@@ -686,7 +835,7 @@ const DeliveryDashboard = () => {
                 >
                   Edit Settings
                 </Button>
-              </Card>
+              </Box>
             )}
           </Container>
         </Box>

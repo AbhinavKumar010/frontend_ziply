@@ -64,6 +64,7 @@ import {
   InputLabel,
   Select,
   InputAdornment,
+  Skeleton,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -143,7 +144,7 @@ function VendorDashboard() {
     category: '',
     stock: '',
     image: null,
-    images: [], // Add images array to initial state
+    images: [],
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
@@ -159,12 +160,20 @@ function VendorDashboard() {
     topSellingProducts: [],
     recentOrders: [],
   });
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  
+  // Consolidated drawer state
+  const [drawerState, setDrawerState] = useState({
+    open: false,
+    variant: 'temporary',
+    width: 280,
+    collapsed: false
+  });
+
   const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isDrawerCollapsed, setIsDrawerCollapsed] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(false);
   const [settings, setSettings] = useState({
     notifications: {
       newOrders: true,
@@ -257,17 +266,61 @@ function VendorDashboard() {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
+  // Update useEffect for responsive drawer
   useEffect(() => {
-    loadProducts();
-    fetchOrders();
-    fetchDashboardStats();
-    fetchCustomers();
-    setupSocketListeners();
-    
-    // Set active tab based on current route
-    const path = location.pathname.split('/').pop();
-    setSelectedTab(path || 'dashboard');
-    
+    const handleResize = () => {
+      if (window.innerWidth < 600) {
+        setDrawerState(prev => ({
+          ...prev,
+          variant: 'temporary',
+          open: false
+        }));
+      } else {
+        setDrawerState(prev => ({
+          ...prev,
+          variant: 'persistent',
+          open: false // Keep drawer closed initially on desktop too
+        }));
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleDrawerToggle = () => {
+    setDrawerState(prev => ({
+      ...prev,
+      open: !prev.open
+    }));
+  };
+
+  // Update the initial data loading
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      try {
+        setIsInitialLoading(true);
+        await Promise.all([
+          loadProducts(),
+          fetchOrders(),
+          fetchDashboardStats(),
+          fetchCustomers()
+        ]);
+        setupSocketListeners();
+        
+        // Set active tab based on current route
+        const path = location.pathname.split('/').pop();
+        setSelectedTab(path || 'dashboard');
+      } catch (error) {
+        console.error('Error initializing dashboard:', error);
+        showSnackbar('Error loading dashboard data', 'error');
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    initializeDashboard();
     return () => {
       socketService.disconnect();
     };
@@ -315,15 +368,15 @@ function VendorDashboard() {
 
   const loadProducts = async () => {
     try {
-      setLoading(true);
+      setIsDataLoading(true);
       const response = await productAPI.getVendorProducts();
       setProducts(response.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error loading products:', error);
       showSnackbar('Error loading products', 'error');
       setProducts([]);
-      setLoading(false);
+    } finally {
+      setIsDataLoading(false);
     }
   };
 
@@ -382,17 +435,16 @@ function VendorDashboard() {
     }
   };
 
-  const handleDrawerToggle = () => {
-    setIsDrawerOpen(!isDrawerOpen);
-  };
-
   const handleNavigation = (path) => {
     navigate(`/vendor/${path}`);
     setSelectedTab(path);
     if (isMobile) {
       setMobileOpen(false);
     }
-    setDrawerOpen(false);
+    setDrawerState(prev => ({
+      ...prev,
+      open: false
+    }));
   };
 
   const handleOpenDialog = (product = null) => {
@@ -405,7 +457,7 @@ function VendorDashboard() {
         category: product.category,
         stock: product.stock,
         image: product.image,
-        images: product.images || [], // Initialize images array
+        images: product.images || [],
       });
       setPreviewUrls(product.images || []);
     } else {
@@ -417,7 +469,7 @@ function VendorDashboard() {
         category: '',
         stock: '',
         image: null,
-        images: [], // Initialize empty images array
+        images: [],
       });
       setPreviewUrls([]);
     }
@@ -434,7 +486,7 @@ function VendorDashboard() {
       category: '',
       stock: '',
       image: null,
-      images: [], // Reset images array
+      images: [],
     });
     setPreviewUrls([]);
     setImageFiles([]);
@@ -830,6 +882,10 @@ function VendorDashboard() {
   );
 
   const renderContent = () => {
+    if (isInitialLoading) {
+      return <LoadingSkeleton />;
+    }
+
     switch (selectedTab) {
       case 'dashboard':
         return (
@@ -2173,9 +2229,14 @@ function VendorDashboard() {
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      bgcolor: 'rgba(255, 255, 255, 0.95)',
+      bgcolor: 'background.paper',
       borderRight: '1px solid',
-      borderColor: 'divider'
+      borderColor: 'divider',
+      width: drawerState.width,
+      transition: theme => theme.transitions.create(['width'], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
     }}>
       {/* User Profile Section */}
       <Box sx={{ 
@@ -2191,8 +2252,8 @@ function VendorDashboard() {
         <Avatar 
           src={user?.profileImage}
           sx={{ 
-            width: isDrawerCollapsed ? 40 : 48, 
-            height: isDrawerCollapsed ? 40 : 48, 
+            width: drawerState.collapsed ? 40 : 48, 
+            height: drawerState.collapsed ? 40 : 48, 
             bgcolor: 'primary.main',
             transition: 'all 0.2s',
             cursor: 'pointer',
@@ -2202,7 +2263,7 @@ function VendorDashboard() {
           }}
           onClick={() => setProfileDialog(true)}
         />
-        {!isDrawerCollapsed && (
+        {!drawerState.collapsed && (
           <Box sx={{ minWidth: 0 }}>
             <Typography 
               variant="subtitle1" 
@@ -2234,7 +2295,7 @@ function VendorDashboard() {
       {/* Navigation Menu */}
       <List sx={{ 
         flexGrow: 1, 
-        px: isDrawerCollapsed ? 1 : 2,
+        px: drawerState.collapsed ? 1 : 2,
         bgcolor: 'rgba(255, 255, 255, 0.95)'
       }}>
         {menuItems.map((item) => (
@@ -2245,7 +2306,7 @@ function VendorDashboard() {
               sx={{
                 borderRadius: 2,
                 py: 1.5,
-                px: isDrawerCollapsed ? 1 : 2,
+                px: drawerState.collapsed ? 1 : 2,
                 '&.Mui-selected': {
                   bgcolor: 'primary.lighter',
                   '&:hover': {
@@ -2258,12 +2319,12 @@ function VendorDashboard() {
               }}
             >
               <ListItemIcon sx={{ 
-                minWidth: isDrawerCollapsed ? 'auto' : 40,
+                minWidth: drawerState.collapsed ? 'auto' : 40,
                 color: selectedTab === item.id ? 'primary.main' : 'inherit'
               }}>
                 {item.icon}
               </ListItemIcon>
-              {!isDrawerCollapsed && (
+              {!drawerState.collapsed && (
                 <ListItemText 
                   primary={item.label} 
                   primaryTypographyProps={{
@@ -2289,19 +2350,19 @@ function VendorDashboard() {
           sx={{
             borderRadius: 2,
             py: 1.5,
-            px: isDrawerCollapsed ? 1 : 2,
+            px: drawerState.collapsed ? 1 : 2,
             '&:hover': {
               bgcolor: 'error.lighter',
             },
           }}
         >
           <ListItemIcon sx={{ 
-            minWidth: isDrawerCollapsed ? 'auto' : 40,
+            minWidth: drawerState.collapsed ? 'auto' : 40,
             color: 'error.main'
           }}>
             <LogoutIcon />
           </ListItemIcon>
-          {!isDrawerCollapsed && (
+          {!drawerState.collapsed && (
             <ListItemText 
               primary="Logout" 
               primaryTypographyProps={{
@@ -2315,6 +2376,61 @@ function VendorDashboard() {
     </Box>
   );
 
+  // Add a function to toggle drawer collapse
+  const handleDrawerCollapse = () => {
+    setDrawerState(prev => ({
+      ...prev,
+      collapsed: !prev.collapsed,
+      width: !prev.collapsed ? 80 : 280
+    }));
+  };
+
+  const LoadingSkeleton = () => (
+    <Box sx={{ p: 2 }}>
+      <Grid container spacing={3}>
+        {[1, 2, 3, 4].map((item) => (
+          <Grid item xs={12} sm={6} md={3} key={item}>
+            <Card sx={{ height: 200, position: 'relative' }}>
+              <Box sx={{ p: 2 }}>
+                <Skeleton variant="text" width="60%" height={40} />
+                <Skeleton variant="text" width="40%" height={30} />
+                <Box sx={{ mt: 2 }}>
+                  <Skeleton variant="rectangular" height={60} />
+                </Box>
+              </Box>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        <Grid item xs={12} md={8}>
+          <Card>
+            <Box sx={{ p: 2 }}>
+              <Skeleton variant="text" width="40%" height={40} />
+              <Skeleton variant="rectangular" height={300} />
+            </Box>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <Box sx={{ p: 2 }}>
+              <Skeleton variant="text" width="60%" height={40} />
+              {[1, 2, 3, 4].map((item) => (
+                <Box key={item} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                  <Skeleton variant="circular" width={40} height={40} />
+                  <Box sx={{ ml: 2, width: '100%' }}>
+                    <Skeleton variant="text" width="80%" />
+                    <Skeleton variant="text" width="40%" />
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -2322,41 +2438,27 @@ function VendorDashboard() {
       bgcolor: '#f5f5f5',
       overflow: 'hidden'
     }}>
-      {/* Mobile Drawer */}
+      {/* Drawer */}
       <Drawer
-        variant="temporary"
-        open={isDrawerOpen}
+        variant={drawerState.variant}
+        open={drawerState.open}
         onClose={handleDrawerToggle}
+        sx={{
+          width: drawerState.width,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerState.width,
+            boxSizing: 'border-box',
+            bgcolor: 'background.paper',
+            borderRight: '1px solid',
+            borderColor: 'divider',
+            ...(drawerState.variant === 'temporary' && {
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            }),
+          },
+        }}
         ModalProps={{
           keepMounted: true,
-        }}
-        sx={{
-          display: { xs: 'block', sm: 'none' },
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
-            width: drawerWidth,
-            background: 'linear-gradient(180deg, #FF6B6B 0%, #4ECDC4 100%)',
-            color: 'white'
-          },
-        }}
-      >
-        {drawer}
-      </Drawer>
-
-      {/* Desktop Drawer */}
-      <Drawer
-        variant="persistent"
-        open={isDrawerOpen}
-        sx={{
-          display: { xs: 'none', sm: 'block' },
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
-            width: drawerWidth,
-            background: 'linear-gradient(180deg, #FF6B6B 0%, #4ECDC4 100%)',
-            color: 'white',
-            transition: 'transform 0.3s ease-in-out',
-            transform: isDrawerOpen ? 'translateX(0)' : 'translateX(-100%)'
-          },
         }}
       >
         {drawer}
@@ -2367,15 +2469,18 @@ function VendorDashboard() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${isDrawerOpen ? drawerWidth : 0}px)` },
+          p: { xs: 1, sm: 2, md: 3 },
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
-          transition: theme => theme.transitions.create(['width', 'margin'], {
+          transition: theme => theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
-          ml: { sm: isDrawerOpen ? `${drawerWidth}px` : 0 },
+          ...(drawerState.open && drawerState.variant === 'persistent' && {
+            width: `calc(100% - ${drawerState.width}px)`,
+            marginLeft: `${drawerState.width}px`,
+          }),
           overflow: 'auto',
           position: 'relative'
         }}
@@ -2390,13 +2495,13 @@ function VendorDashboard() {
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center',
-            mb: 3,
-            p: 2,
+            mb: { xs: 1, sm: 2, md: 3 },
+            p: { xs: 1, sm: 2 },
             bgcolor: 'white',
             borderRadius: 2,
             boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
           }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <IconButton
                 color="inherit"
                 edge="start"
@@ -2409,25 +2514,37 @@ function VendorDashboard() {
               >
                 <MenuIcon />
               </IconButton>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1rem', sm: '1.25rem' }
+                }}
+              >
                 {menuItems.find(item => item.id === selectedTab)?.label || 'Dashboard'}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Tooltip title="Notifications">
-                <IconButton onClick={handleNotificationClick}>
+                <IconButton 
+                  onClick={handleNotificationClick}
+                  size={isMobile ? "small" : "medium"}
+                >
                   <Badge badgeContent={notifications.filter(n => !n.read).length} color="error">
                     <NotificationsIcon />
                   </Badge>
                 </IconButton>
               </Tooltip>
               <Tooltip title="Profile">
-                <IconButton onClick={() => handleNavigation('profile')}>
+                <IconButton 
+                  onClick={() => handleNavigation('profile')}
+                  size={isMobile ? "small" : "medium"}
+                >
                   <Avatar 
                     sx={{ 
                       bgcolor: theme.palette.primary.main,
-                      width: 32,
-                      height: 32,
+                      width: { xs: 28, sm: 32 },
+                      height: { xs: 28, sm: 32 },
                       boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                     }}
                   >
@@ -2439,88 +2556,25 @@ function VendorDashboard() {
           </Box>
         </motion.div>
 
-        {/* Notification Panel */}
-        <Menu
-          anchorEl={notificationAnchor}
-          open={Boolean(notificationAnchor)}
-          onClose={handleNotificationClose}
-          PaperProps={{
-            sx: {
-              width: 360,
-              maxHeight: 400,
-              mt: 1.5
-            }
-          }}
-        >
-          <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6">Notifications</Typography>
-          </Box>
-          <Box sx={{ maxHeight: 300, overflow: 'auto' }}>
-            {notifications.length > 0 ? (
-              notifications.map((notification) => (
-                <ListItemButton
-                  key={notification.id}
-                  onClick={() => handleNotificationRead(notification.id)}
-                  sx={{
-                    py: 1.5,
-                    px: 2,
-                    bgcolor: notification.read ? 'transparent' : 'action.hover',
-                    '&:hover': {
-                      bgcolor: 'action.selected'
-                    }
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Avatar
-                      sx={{
-                        bgcolor: notification.type === 'order' ? 'primary.main' :
-                                notification.type === 'stock' ? 'warning.main' :
-                                notification.type === 'delivery' ? 'success.main' :
-                                'grey.500'
-                      }}
-                    >
-                      {notification.type === 'order' ? <CartIcon /> :
-                       notification.type === 'stock' ? <WarningIcon /> :
-                       notification.type === 'delivery' ? <ShippingIcon /> :
-                       <NotificationsIcon />}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={notification.message}
-                    secondary={notification.time}
-                    primaryTypographyProps={{
-                      fontWeight: notification.read ? 'normal' : 'bold'
-                    }}
-                  />
-                </ListItemButton>
-              ))
-            ) : (
-              <Box sx={{ p: 2, textAlign: 'center' }}>
-                <Typography color="text.secondary">No new notifications</Typography>
-              </Box>
-            )}
-          </Box>
-          <Divider />
-          <Box sx={{ p: 1, textAlign: 'center' }}>
-            <Button
-              color="primary"
-              onClick={() => {
-                handleNotificationClose();
-                handleNavigation('notifications');
-              }}
-            >
-              View All Notifications
-            </Button>
-          </Box>
-        </Menu>
-
-        {/* Main Content Area */}
+        {/* Main Content Area with Loading State */}
         <Box sx={{ 
           flexGrow: 1,
-          mb: 3,
+          mb: { xs: 1, sm: 2, md: 3 },
           width: '100%'
         }}>
-          {renderContent()}
+          {isDataLoading ? (
+            <Box sx={{ p: 2 }}>
+              <LinearProgress />
+            </Box>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {renderContent()}
+            </motion.div>
+          )}
         </Box>
 
         {/* Product Dialog */}
