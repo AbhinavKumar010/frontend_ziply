@@ -8,7 +8,7 @@ class SocketService {
     this.listeners = new Map();
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
-    this.reconnectDelay = 5000; // 5 seconds
+    this.reconnectDelay = 10000; // Increased to 10 seconds
     this.isConnecting = false;
   }
 
@@ -24,13 +24,13 @@ class SocketService {
     }
 
     this.isConnecting = true;
-      const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     
-      if (!token) {
-        console.warn('No token available for socket connection');
+    if (!token) {
+      console.warn('No token available for socket connection');
       this.isConnecting = false;
-        return;
-      }
+      return;
+    }
 
     try {
       this.socket = io(SOCKET_URL, {
@@ -38,7 +38,8 @@ class SocketService {
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
         reconnectionDelay: this.reconnectDelay,
-        timeout: 10000
+        timeout: 30000, // Increased to 30 seconds
+        transports: ['websocket', 'polling'] // Added transport options
       });
 
       this.socket.on('connect', () => {
