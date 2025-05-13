@@ -23,17 +23,13 @@ export default defineConfig({
     host: true,
     open: true,
     cors: true,
-    headers: {
-      'Content-Type': 'application/javascript',
-      'Access-Control-Allow-Origin': '*',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin'
-    },
     hmr: {
       overlay: true
     }
   },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom']
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
   }
 })

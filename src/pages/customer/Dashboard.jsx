@@ -99,6 +99,19 @@ import { useInView } from 'react-intersection-observer';
 import { formatDistanceToNow } from 'date-fns';
 import { alpha } from '@mui/material/styles';
 
+// Define button styles
+const buttonStyles = {
+  mt: 2,
+  bgcolor: '#FF0000',
+  color: 'white',
+  '&:hover': {
+    bgcolor: '#CC0000',
+  },
+  '&:disabled': {
+    bgcolor: '#FFCCCC',
+  }
+};
+
 const CustomerDashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();

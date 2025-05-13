@@ -1,10 +1,7 @@
 import { 
   BrowserRouter as Router, 
   Routes, 
-  Route,
-  createBrowserRouter,
-  RouterProvider,
-  createRoutesFromElements
+  Route
 } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -60,60 +57,42 @@ const theme = createTheme({
   },
 });
 
-// Create router with future flags
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route 
-        path="/customer" 
-        element={
-          <ProtectedRoute requiredRole="customer">
-            <CustomerDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/customer/*" 
-        element={
-          <ProtectedRoute requiredRole="customer">
-            <CustomerDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/vendor/*" 
-        element={
-          <ProtectedRoute requiredRole="vendor">
-            <VendorDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/delivery/*" 
-        element={
-          <ProtectedRoute requiredRole="delivery">
-            <DeliveryDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="*" element={<NotFound />} />
-    </Route>
-  ),
-  {
-    future: {
-      v7_startTransition: true
-    }
-  }
-);
-
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <RouterProvider router={router} />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route 
+            path="/customer/*" 
+            element={
+              <ProtectedRoute requiredRole="customer">
+                <CustomerDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/vendor/*" 
+            element={
+              <ProtectedRoute requiredRole="vendor">
+                <VendorDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/delivery/*" 
+            element={
+              <ProtectedRoute requiredRole="delivery">
+                <DeliveryDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
       <ToastContainer position="top-right" autoClose={3000} />
     </ThemeProvider>
   );

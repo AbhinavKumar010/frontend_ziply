@@ -143,6 +143,7 @@ function VendorDashboard() {
     category: '',
     stock: '',
     image: null,
+    images: [], // Add images array to initial state
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
@@ -404,6 +405,7 @@ function VendorDashboard() {
         category: product.category,
         stock: product.stock,
         image: product.image,
+        images: product.images || [], // Initialize images array
       });
       setPreviewUrls(product.images || []);
     } else {
@@ -415,6 +417,7 @@ function VendorDashboard() {
         category: '',
         stock: '',
         image: null,
+        images: [], // Initialize empty images array
       });
       setPreviewUrls([]);
     }
@@ -431,6 +434,7 @@ function VendorDashboard() {
       category: '',
       stock: '',
       image: null,
+      images: [], // Reset images array
     });
     setPreviewUrls([]);
     setImageFiles([]);
@@ -438,35 +442,28 @@ function VendorDashboard() {
 
   const handleImageChange = (event) => {
     const files = Array.from(event.target.files);
-    
-    // Validate file types
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const invalidFiles = files.filter(file => !validTypes.includes(file.type));
-    
-    if (invalidFiles.length > 0) {
-      showSnackbar('Please upload only JPG, PNG or WebP images', 'error');
-      return;
+    if (files.length > 0) {
+      setImageFiles(prev => [...prev, ...files]);
+      
+      // Create preview URLs for the new images
+      const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+      setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+      
+      // Update formData with the new image URLs
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...newPreviewUrls]
+      }));
     }
-
-    // Validate file sizes (max 5MB per file)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const oversizedFiles = files.filter(file => file.size > maxSize);
-    
-    if (oversizedFiles.length > 0) {
-      showSnackbar('Images must be less than 5MB each', 'error');
-      return;
-    }
-
-    setImageFiles(prev => [...prev, ...files]);
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...files.map(file => URL.createObjectURL(file))]
-    }));
   };
 
   const handleRemoveImage = (index) => {
-    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
     setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSubmit = async (e) => {
