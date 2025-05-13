@@ -18,7 +18,16 @@ export default defineConfig({
         format: 'es',
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        manualChunks: undefined
+      },
+    },
+    assetsInlineLimit: 0,
+    cssCodeSplit: true,
+    minify: 'terser',
+    terserOptions: {
+      format: {
+        comments: false,
       },
     },
   },
