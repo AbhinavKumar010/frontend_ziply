@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
@@ -11,10 +12,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: undefined,
+        format: 'es',
       },
     },
   },
   server: {
     port: 3000,
+    headers: {
+      'Content-Type': 'application/javascript',
+    },
   },
 })
