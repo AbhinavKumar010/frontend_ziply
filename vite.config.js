@@ -10,44 +10,43 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: true,
+    manifest: true,
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-      },
-      output: {
-        format: 'es',
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
-        manualChunks: undefined
-      },
-    },
-    assetsInlineLimit: 0,
-    cssCodeSplit: true,
-    minify: 'terser',
-    terserOptions: {
-      format: {
-        comments: false,
-      },
-    },
+      }
+    }
   },
   server: {
-    port: 3001,
-    host: 'localhost',
+    port: 5173,
     strictPort: true,
+    host: 'localhost',
     cors: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/javascript'
+    },
     hmr: {
       protocol: 'ws',
       host: 'localhost',
-      port: 3001
+      port: 5173
     }
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
-    }
+    },
+    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.json']
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', '@mui/material', '@emotion/react', '@emotion/styled']
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@mui/material',
+      '@emotion/react',
+      '@emotion/styled'
+    ],
+    force: true
   }
 })

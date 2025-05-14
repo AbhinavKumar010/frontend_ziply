@@ -219,6 +219,9 @@ const staggerContainer = {
   }
 };
 
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+// Update StatCard component to use proper animation props
 const StatCard = ({ title, value, icon, change, color, image }) => (
   <motion.div
     initial="hidden"
@@ -664,31 +667,6 @@ function VendorDashboard() {
     triggerOnce: true,
     threshold: 0.1
   });
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-  // Update useEffect for responsive drawer
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 600) {
-        setDrawerState(prev => ({
-          ...prev,
-          variant: 'temporary',
-          open: false
-        }));
-      } else {
-        setDrawerState(prev => ({
-          ...prev,
-          variant: 'persistent',
-          open: false // Keep drawer closed initially on desktop too
-        }));
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleDrawerToggle = () => {
     setDrawerState(prev => ({
