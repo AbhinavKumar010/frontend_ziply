@@ -196,8 +196,36 @@ const ResponsiveTable = ({ children, minWidth = 600 }) => {
   );
 };
 
+// Add animation variants before component definitions
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+// Update StatCard component to use proper animation props
 const StatCard = ({ title, value, icon, change, color, image }) => (
   <motion.div
+    initial="hidden"
+    animate="visible"
     variants={fadeInUp}
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
@@ -371,6 +399,149 @@ const MobileBottomNav = ({ selectedTab, handleNavigation }) => {
   );
 };
 
+// Add MobileMenu component definition
+const MobileMenu = ({ open, onClose, menuItems, selectedTab, handleNavigation }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  if (!isMobile) return null;
+
+  return (
+    <Drawer
+      anchor="right"
+      open={open}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          width: '100%',
+          maxWidth: 280,
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          borderRadius: '16px 0 0 16px'
+        }
+      }}
+    >
+      <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Menu
+        </Typography>
+        <IconButton onClick={onClose} size="small">
+          <CloseIcon />
+        </IconButton>
+      </Box>
+      <Divider />
+      <List sx={{ px: 2 }}>
+        {menuItems.map((item) => (
+          <ListItem key={item.id} disablePadding sx={{ mb: 1 }}>
+            <ListItemButton
+              selected={selectedTab === item.id}
+              onClick={() => {
+                handleNavigation(item.id);
+                onClose();
+              }}
+              sx={{
+                borderRadius: 2,
+                py: 1.5,
+                px: 2,
+                '&.Mui-selected': {
+                  bgcolor: 'primary.lighter',
+                  '&:hover': {
+                    bgcolor: 'primary.lighter',
+                  },
+                },
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ 
+                minWidth: 40,
+                color: selectedTab === item.id ? 'primary.main' : 'inherit'
+              }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.label} 
+                primaryTypographyProps={{
+                  fontWeight: selectedTab === item.id ? 'bold' : 'normal',
+                  color: 'text.primary'
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+      <Divider />
+      <List sx={{ px: 2 }}>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => {
+              handleNavigation('profile');
+              onClose();
+            }}
+            sx={{
+              borderRadius: 2,
+              py: 1.5,
+              px: 2,
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <Avatar 
+                sx={{ 
+                  width: 24, 
+                  height: 24,
+                  bgcolor: theme.palette.primary.main
+                }}
+              >
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'V'}
+              </Avatar>
+            </ListItemIcon>
+            <ListItemText 
+              primary="Profile" 
+              primaryTypographyProps={{
+                color: 'text.primary'
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => {
+              localStorage.removeItem('token');
+              window.location.href = '/login';
+            }}
+            sx={{
+              borderRadius: 2,
+              py: 1.5,
+              px: 2,
+              '&:hover': {
+                bgcolor: 'error.lighter',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ 
+              minWidth: 40,
+              color: 'error.main'
+            }}>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText 
+              primary="Logout" 
+              primaryTypographyProps={{
+                color: 'error.main',
+                fontWeight: 'medium'
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </Drawer>
+  );
+};
+
 function VendorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -497,46 +668,6 @@ function VendorDashboard() {
     threshold: 0.1
   });
 
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-  // Update useEffect for responsive drawer
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 600) {
-        setDrawerState(prev => ({
-          ...prev,
-          variant: 'temporary',
-          open: false
-        }));
-      } else {
-        setDrawerState(prev => ({
-          ...prev,
-          variant: 'persistent',
-          open: false // Keep drawer closed initially on desktop too
-        }));
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const handleDrawerToggle = () => {
     setDrawerState(prev => ({
       ...prev,
@@ -546,6 +677,12 @@ function VendorDashboard() {
 
   // Update the initial data loading
   useEffect(() => {
+    // Redirect to dashboard if on root vendor path
+    if (location.pathname === '/vendor') {
+      navigate('/vendor/dashboard');
+      return;
+    }
+
     const initializeDashboard = async () => {
       try {
         setIsInitialLoading(true);
@@ -572,7 +709,7 @@ function VendorDashboard() {
     return () => {
       socketService.disconnect();
     };
-  }, [location]);
+  }, [location, navigate]);
 
   const setupSocketListeners = () => {
     socketService.connect();
@@ -684,7 +821,8 @@ function VendorDashboard() {
   };
 
   const handleNavigation = (path) => {
-    navigate(`/vendor/dashboard/${path}`);
+    const fullPath = path === 'dashboard' ? '/vendor/dashboard' : `/vendor/dashboard/${path}`;
+    navigate(fullPath);
     setSelectedTab(path);
     if (isMobile) {
       setMobileOpen(false);
@@ -2696,7 +2834,8 @@ function VendorDashboard() {
               bgcolor: 'background.paper',
               borderRight: '1px solid',
               borderColor: 'divider',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              zIndex: 1200
             }
           }}
         >
@@ -2719,7 +2858,9 @@ function VendorDashboard() {
           ...(drawerState.open && !isMobile && {
             width: `calc(100% - ${drawerState.width}px)`,
             marginLeft: `${drawerState.width}px`,
-          })
+          }),
+          minHeight: '100vh',
+          bgcolor: '#f5f5f5'
         }}
       >
         {/* Top Bar */}
@@ -2729,7 +2870,8 @@ function VendorDashboard() {
           sx={{ 
             bgcolor: 'background.paper',
             borderBottom: '1px solid',
-            borderColor: 'divider'
+            borderColor: 'divider',
+            zIndex: 1100
           }}
         >
           <Toolbar sx={{ px: { xs: 1, sm: 2 } }}>
@@ -2748,7 +2890,8 @@ function VendorDashboard() {
               sx={{ 
                 flexGrow: 1,
                 fontSize: { xs: '1.1rem', sm: '1.25rem' },
-                fontWeight: 600
+                fontWeight: 600,
+                color: 'text.primary'
               }}
             >
               {menuItems.find(item => item.id === selectedTab)?.label || 'Dashboard'}
@@ -2758,6 +2901,7 @@ function VendorDashboard() {
                 <IconButton 
                   onClick={handleNotificationClick}
                   size={isMobile ? "small" : "medium"}
+                  sx={{ color: 'text.primary' }}
                 >
                   <Badge badgeContent={notifications.filter(n => !n.read).length} color="error">
                     <NotificationsIcon />
@@ -2768,6 +2912,7 @@ function VendorDashboard() {
                 <IconButton 
                   onClick={() => setMobileMenuOpen(true)}
                   size="small"
+                  sx={{ color: 'text.primary' }}
                 >
                   <MoreVertIcon />
                 </IconButton>
@@ -2800,7 +2945,10 @@ function VendorDashboard() {
           flexGrow: 1,
           width: '100%',
           bgcolor: '#f5f5f5',
-          p: { xs: 1, sm: 2, md: 3 }
+          p: { xs: 1, sm: 2, md: 3 },
+          overflow: 'auto',
+          position: 'relative',
+          zIndex: 1
         }}>
           {isDataLoading ? (
             <Box sx={{ p: 2 }}>
@@ -2811,6 +2959,7 @@ function VendorDashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
+              style={{ height: '100%' }}
             >
               {renderContent()}
             </motion.div>
@@ -2846,6 +2995,7 @@ function VendorDashboard() {
             vertical: isMobile ? 'bottom' : 'top',
             horizontal: 'center'
           }}
+          sx={{ zIndex: 1400 }}
         >
           <Alert 
             onClose={handleCloseSnackbar} 

@@ -32,20 +32,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
-    host: true,
-    open: true,
+    port: 3001,
+    host: 'localhost',
+    strictPort: true,
     cors: true,
     hmr: {
-      overlay: true
-    },
-    headers: {
-      'Content-Type': 'application/javascript',
-    },
-    middlewareMode: false,
-    fs: {
-      strict: true,
-      allow: ['..']
+      protocol: 'ws',
+      host: 'localhost',
+      port: 3001
     }
   },
   resolve: {
