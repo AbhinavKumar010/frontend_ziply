@@ -2078,13 +2078,14 @@ const CustomerDashboard = () => {
               color: 'white',
               display: { xs: 'flex', md: 'none' }, // Show only on mobile
               transition: 'transform 0.2s',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               '&:hover': {
                 transform: 'scale(1.1)',
-                backgroundColor: 'rgba(255,255,255,0.1)'
+                backgroundColor: 'rgba(255, 255, 255, 0.2)'
               }
             }}
           >
-            <Menu />
+            <Menu sx={{ fontSize: 28 }} />
           </IconButton>
           <Box sx={{ 
             display: 'flex', 
