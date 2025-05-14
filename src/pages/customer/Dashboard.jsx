@@ -88,6 +88,9 @@ import {
   Money,
   CheckCircleOutline,
   ShoppingBag,
+  Chat,
+  CloseIcon,
+  Send,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -315,7 +318,7 @@ const CustomerDashboard = () => {
     zipCode: '',
     isDefault: false
   });
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [profileDialog, setProfileDialog] = useState(false);
   const [liveOrders, setLiveOrders] = useState([]);
   const [trendingProducts, setTrendingProducts] = useState([]);
   const [searchHistory, setSearchHistory] = useState([]);
@@ -327,6 +330,29 @@ const CustomerDashboard = () => {
   const [orderSuccessOpen, setOrderSuccessOpen] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
   const matches = useMediaQuery('(max-width:600px)');
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    preferences: {
+      notifications: true,
+      emailUpdates: true,
+      smsUpdates: false
+    },
+    savedAddresses: [],
+    paymentMethods: []
+  });
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      text: "Hello! How can I help you today?",
+      sender: "bot",
+      timestamp: new Date()
+    }
+  ]);
+  const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
     if (!user?._id) {
@@ -667,7 +693,7 @@ const CustomerDashboard = () => {
       icon: <Person />, 
       text: 'Profile',
       onClick: () => {
-        setProfileDialogOpen(true);
+        setProfileDialog(true);
         setDrawerOpen(false);
       }
     },
@@ -1554,85 +1580,221 @@ const CustomerDashboard = () => {
 
   const renderProfileDialog = () => (
     <Dialog
-      open={profileDialogOpen}
-      onClose={() => setProfileDialogOpen(false)}
-      maxWidth="sm"
+      open={profileDialog}
+      onClose={() => setProfileDialog(false)}
+      maxWidth="md"
       fullWidth
-      fullScreen={matches}
       PaperProps={{
-        sx: styles.dialogPaper
+        sx: {
+          borderRadius: '16px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        }
       }}
     >
       <DialogTitle sx={{ bgcolor: '#FF0000', color: 'white' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>Profile</Typography>
-          <IconButton onClick={() => setProfileDialogOpen(false)} sx={{ color: 'white' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Profile Settings
+          </Typography>
+          <IconButton onClick={() => setProfileDialog(false)} sx={{ color: 'white' }}>
             <Close />
           </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Avatar
-            sx={{
-              width: 120,
-              height: 120,
-              bgcolor: '#FF0000',
-              fontSize: '3rem',
-              mb: 2,
-              mx: 'auto',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            }}
-          >
-            {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
-          </Avatar>
-          <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-            {user?.name || 'Customer'}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>
-            {user?.email || 'No email provided'}
-          </Typography>
-        </Box>
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
-            Account Information
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Name"
-                value={user?.name || ''}
-                disabled
-                sx={{
-                  mb: 2,
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#FF0000',
-                    },
-                  },
-                }}
-              />
+        <Box sx={{ mt: 2 }}>
+          <Tabs value={0} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+            <Tab label="Personal Info" />
+            <Tab label="Addresses" />
+            <Tab label="Payment Methods" />
+            <Tab label="Preferences" />
+          </Tabs>
+
+          {/* Personal Information */}
+          <Box sx={{ p: 2 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  value={profileData.name}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Email"
+                  value={profileData.email}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Phone Number"
+                  value={profileData.phone}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Default Address"
+                  value={profileData.address}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+                  multiline
+                  rows={2}
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                value={user?.email || ''}
-                disabled
-                sx={{
-                  mb: 2,
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#FF0000',
-                    },
-                  },
-                }}
-              />
+          </Box>
+
+          {/* Addresses */}
+          <Box sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="h6">Saved Addresses</Typography>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => {/* Handle add address */}}
+              >
+                Add New Address
+              </Button>
+            </Box>
+            <Grid container spacing={2}>
+              {profileData.savedAddresses.map((address, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="subtitle1">{address.label}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {address.street}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {address.city}, {address.state} {address.zipCode}
+                      </Typography>
+                      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                        <Button size="small" onClick={() => {/* Handle edit */}}>
+                          Edit
+                        </Button>
+                        <Button size="small" color="error" onClick={() => {/* Handle delete */}}>
+                          Delete
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
-          </Grid>
+          </Box>
+
+          {/* Payment Methods */}
+          <Box sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="h6">Payment Methods</Typography>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => {/* Handle add payment method */}}
+              >
+                Add Payment Method
+              </Button>
+            </Box>
+            <Grid container spacing={2}>
+              {profileData.paymentMethods.map((method, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <CreditCard />
+                        <Box>
+                          <Typography variant="subtitle1">
+                            {method.type} ending in {method.last4}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Expires {method.expiryMonth}/{method.expiryYear}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                        <Button size="small" onClick={() => {/* Handle edit */}}>
+                          Edit
+                        </Button>
+                        <Button size="small" color="error" onClick={() => {/* Handle delete */}}>
+                          Delete
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
+          {/* Preferences */}
+          <Box sx={{ p: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Notification Preferences</Typography>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={profileData.preferences.notifications}
+                    onChange={(e) => setProfileData(prev => ({
+                      ...prev,
+                      preferences: { ...prev.preferences, notifications: e.target.checked }
+                    }))}
+                  />
+                }
+                label="Push Notifications"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={profileData.preferences.emailUpdates}
+                    onChange={(e) => setProfileData(prev => ({
+                      ...prev,
+                      preferences: { ...prev.preferences, emailUpdates: e.target.checked }
+                    }))}
+                  />
+                }
+                label="Email Updates"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={profileData.preferences.smsUpdates}
+                    onChange={(e) => setProfileData(prev => ({
+                      ...prev,
+                      preferences: { ...prev.preferences, smsUpdates: e.target.checked }
+                    }))}
+                  />
+                }
+                label="SMS Updates"
+              />
+            </FormGroup>
+          </Box>
         </Box>
       </DialogContent>
+      <DialogActions sx={{ p: 3 }}>
+        <Button
+          variant="outlined"
+          onClick={() => setProfileDialog(false)}
+          sx={{ mr: 1 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() => {/* Handle save profile */}}
+          sx={{
+            bgcolor: '#FF0000',
+            '&:hover': { bgcolor: '#CC0000' }
+          }}
+        >
+          Save Changes
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 
@@ -2043,10 +2205,160 @@ const CustomerDashboard = () => {
           <Notifications color={notificationsDialogOpen ? 'primary' : 'inherit'} />
         </Badge>
       </IconButton>
-      <IconButton onClick={() => setProfileDialogOpen(true)}>
-        <Person color={profileDialogOpen ? 'primary' : 'inherit'} />
+      <IconButton onClick={() => setProfileDialog(true)}>
+        <Person color={profileDialog ? 'primary' : 'inherit'} />
       </IconButton>
     </Box>
+  );
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
+
+    // Add user message
+    const userMessage = {
+      id: messages.length + 1,
+      text: newMessage,
+      sender: "user",
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, userMessage]);
+    setNewMessage('');
+
+    // Simulate bot response
+    setTimeout(() => {
+      const botResponse = {
+        id: messages.length + 2,
+        text: "I'm here to help! What would you like to know about our services?",
+        sender: "bot",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, botResponse]);
+    }, 1000);
+  };
+
+  const renderChatbot = () => (
+    <>
+      {/* Chat Button */}
+      <IconButton
+        onClick={() => setChatOpen(true)}
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 80, sm: 20 },
+          right: 20,
+          bgcolor: '#FF0000',
+          color: 'white',
+          width: 56,
+          height: 56,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          '&:hover': {
+            bgcolor: '#CC0000',
+            transform: 'scale(1.1)',
+          },
+          transition: 'all 0.2s',
+          zIndex: 1000
+        }}
+      >
+        <Chat />
+      </IconButton>
+
+      {/* Chat Dialog */}
+      <Dialog
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            position: 'fixed',
+            bottom: { xs: 80, sm: 20 },
+            right: 20,
+            height: 500,
+            maxHeight: '80vh',
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ bgcolor: '#FF0000', color: 'white' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Chat Support
+            </Typography>
+            <IconButton onClick={() => setChatOpen(false)} sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
+          {/* Messages Area */}
+          <Box sx={{ 
+            flexGrow: 1, 
+            overflowY: 'auto',
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
+          }}>
+            {messages.map((message) => (
+              <Box
+                key={message.id}
+                sx={{
+                  display: 'flex',
+                  justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
+                  mb: 1
+                }}
+              >
+                <Box
+                  sx={{
+                    maxWidth: '70%',
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: message.sender === 'user' ? '#FF0000' : 'grey.100',
+                    color: message.sender === 'user' ? 'white' : 'text.primary',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <Typography variant="body1">{message.text}</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.7, display: 'block', mt: 1 }}>
+                    {new Date(message.timestamp).toLocaleTimeString()}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+
+          {/* Input Area */}
+          <Box sx={{ 
+            p: 2, 
+            borderTop: 1, 
+            borderColor: 'divider',
+            bgcolor: 'background.paper'
+          }}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <TextField
+                fullWidth
+                placeholder="Type your message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                variant="outlined"
+                size="small"
+              />
+              <IconButton 
+                onClick={handleSendMessage}
+                sx={{ 
+                  bgcolor: '#FF0000',
+                  color: 'white',
+                  '&:hover': { bgcolor: '#CC0000' }
+                }}
+              >
+                <Send />
+              </IconButton>
+            </Box>
+          </Box>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 
   return (
@@ -2150,7 +2462,7 @@ const CustomerDashboard = () => {
               </Badge>
             </IconButton>
             <IconButton 
-              onClick={() => setProfileDialogOpen(true)}
+              onClick={() => setProfileDialog(true)}
               sx={{
                 padding: { xs: '8px', sm: '12px' }
               }}
@@ -2569,6 +2881,7 @@ const CustomerDashboard = () => {
       {renderCart()}
       {renderCheckout()}
       {renderOrderSuccess()}
+      {renderChatbot()}
 
       <Snackbar
         open={snackbar.open}
