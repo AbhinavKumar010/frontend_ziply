@@ -226,7 +226,7 @@ const DeliveryDashboard = () => {
     try {
       await deliveryAPI.updateProfile(profileData);
       showSnackbar('Profile updated successfully', 'success');
-      setProfileDialog(false);
+    setProfileDialog(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       showSnackbar('Failed to update profile', 'error');
@@ -237,7 +237,7 @@ const DeliveryDashboard = () => {
     try {
       await deliveryAPI.updateSettings(settings);
       showSnackbar('Settings updated successfully', 'success');
-      setSettingsDialog(false);
+    setSettingsDialog(false);
     } catch (error) {
       console.error('Error updating settings:', error);
       showSnackbar('Failed to update settings', 'error');
@@ -272,7 +272,7 @@ const DeliveryDashboard = () => {
           handleNavigation(newValue);
         }}
         showLabels
-      >
+            >
         <BottomNavigationAction 
           label="Home" 
           value="dashboard" 
@@ -309,36 +309,36 @@ const DeliveryDashboard = () => {
       </DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField
-            label="Name"
+              <TextField
+                label="Name"
             fullWidth
-            value={profileData.name}
-            onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-          />
-          <TextField
-            label="Email"
+                value={profileData.name}
+                onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+              />
+              <TextField
+                label="Email"
             fullWidth
-            value={profileData.email}
-            onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-          />
-          <TextField
-            label="Phone"
+                value={profileData.email}
+                onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+              />
+              <TextField
+                label="Phone"
             fullWidth
-            value={profileData.phone}
-            onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-          />
-          <TextField
-            label="Address"
+                value={profileData.phone}
+                onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+              />
+              <TextField
+                label="Address"
             fullWidth
-            value={profileData.address}
-            onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-          />
-          <TextField
-            label="Vehicle Number"
+                value={profileData.address}
+                onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+              />
+              <TextField
+                label="Vehicle Number"
             fullWidth
-            value={profileData.vehicleNumber}
-            onChange={(e) => setProfileData({ ...profileData, vehicleNumber: e.target.value })}
-          />
+                value={profileData.vehicleNumber}
+                onChange={(e) => setProfileData({ ...profileData, vehicleNumber: e.target.value })}
+              />
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -400,24 +400,24 @@ const DeliveryDashboard = () => {
               label="Auto Accept Deliveries"
             />
           </FormGroup>
-          <TextField
-            label="Delivery Radius (km)"
+              <TextField
+                label="Delivery Radius (km)"
             type="number"
             fullWidth
-            value={settings.deliveryRadius}
+                value={settings.deliveryRadius}
             onChange={(e) => setSettings({ ...settings, deliveryRadius: Number(e.target.value) })}
             InputProps={{ inputProps: { min: 1, max: 50 } }}
-          />
+              />
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button 
+              <Button
           onClick={() => setSettingsDialog(false)}
-          variant="outlined"
-        >
+                variant="outlined"
+              >
           Cancel
-        </Button>
-        <Button 
+              </Button>
+              <Button
           onClick={handleSettingsUpdate}
           variant="contained"
           startIcon={<SaveIcon />}
@@ -521,13 +521,13 @@ const DeliveryDashboard = () => {
 
   // Define drawer content
   const drawer = (
-    <Box sx={{ 
+          <Box sx={{ 
       width: drawerWidth,
       height: '100%',
-      display: 'flex',
+            display: 'flex', 
       flexDirection: 'column',
       bgcolor: 'background.paper'
-    }}>
+          }}>
       {/* Drawer Header */}
       <Box sx={{ 
         p: 2, 
@@ -538,7 +538,7 @@ const DeliveryDashboard = () => {
         borderColor: 'divider'
       }}>
         <Avatar 
-          sx={{ 
+                sx={{ 
             width: 48, 
             height: 48,
             bgcolor: 'primary.main'
@@ -552,8 +552,8 @@ const DeliveryDashboard = () => {
           </Typography>
           <Typography variant="body2" color="textSecondary">
             {user?.email || 'delivery@ziply.com'}
-          </Typography>
-        </Box>
+              </Typography>
+            </Box>
       </Box>
 
       {/* Drawer Menu Items */}
@@ -562,7 +562,7 @@ const DeliveryDashboard = () => {
           <ListItem 
             key={item.path} 
             disablePadding
-            sx={{ 
+                  sx={{ 
               mb: 0.5,
               '& .MuiListItemButton-root': {
                 borderRadius: 1,
@@ -570,7 +570,7 @@ const DeliveryDashboard = () => {
                 '&.Mui-selected': {
                   bgcolor: 'primary.light',
                   color: 'primary.main',
-                  '&:hover': {
+                    '&:hover': {
                     bgcolor: 'primary.light',
                   },
                   '& .MuiListItemIcon-root': {
@@ -578,15 +578,15 @@ const DeliveryDashboard = () => {
                   },
                 },
               },
-            }}
-          >
+                }}
+              >
             <ListItemButton
               selected={selectedTab === item.path}
               onClick={() => handleNavigation(item.path)}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
                 {item.icon}
-              </ListItemIcon>
+                  </ListItemIcon>
               <ListItemText 
                 primary={item.text}
                 primaryTypographyProps={{
@@ -614,210 +614,210 @@ const DeliveryDashboard = () => {
         >
           Logout
         </Button>
-      </Box>
-    </Box>
+            </Box>
+          </Box>
   );
 
   const renderStats = () => (
-    <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid container spacing={3} sx={{ mb: 4 }}>
       {[
         { title: 'Today\'s Deliveries', value: stats.todayDeliveries, color: 'primary.main', icon: <DeliveryIcon /> },
         { title: 'Completed', value: stats.completed, color: 'success.main', icon: <CheckCircleIcon /> },
         { title: 'In Progress', value: stats.inProgress, color: 'warning.main', icon: <PendingIcon /> },
         { title: 'Earnings', value: `₹${stats.earnings}`, color: 'info.main', icon: <BikeIcon /> }
       ].map((stat, index) => (
-        <Grid item xs={12} sm={6} md={3} key={index}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card sx={styles.statsCard}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Box sx={{ 
-                    p: 1.5, 
-                    borderRadius: 2,
-                    bgcolor: `${stat.color}15`,
-                    color: stat.color,
-                    mr: 2
-                  }}>
-                    {stat.icon}
-                  </Box>
-                  <Typography 
-                    color="textSecondary"
-                    sx={{ 
-                      fontWeight: 500,
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    }}
-                  >
-                    {stat.title}
-                  </Typography>
-                </Box>
-                <Typography 
-                  variant="h4" 
-                  component="div" 
-                  sx={{ 
-                    color: stat.color,
-                    fontWeight: 700,
-                    fontSize: { xs: '1.5rem', sm: '2rem' }
-                  }}
-                >
-                  {stat.value}
-                </Typography>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </Grid>
-      ))}
-    </Grid>
+                    <Grid item xs={12} sm={6} md={3} key={index}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Card sx={styles.statsCard}>
+                          <CardContent>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                              <Box sx={{ 
+                                p: 1.5, 
+                                borderRadius: 2,
+                                bgcolor: `${stat.color}15`,
+                                color: stat.color,
+                                mr: 2
+                              }}>
+                                {stat.icon}
+                              </Box>
+                              <Typography 
+                                color="textSecondary"
+                                sx={{ 
+                                  fontWeight: 500,
+                                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                                }}
+                              >
+                                {stat.title}
+                              </Typography>
+                            </Box>
+                            <Typography 
+                              variant="h4" 
+                              component="div" 
+                              sx={{ 
+                                color: stat.color,
+                                fontWeight: 700,
+                                fontSize: { xs: '1.5rem', sm: '2rem' }
+                              }}
+                            >
+                              {stat.value}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+                  ))}
+                </Grid>
   );
 
   const renderActiveDeliveries = () => (
     <>
-      <Typography 
-        variant="h5" 
-        sx={{ 
-          mb: 3,
-          fontWeight: 600,
-          fontSize: { xs: '1.25rem', sm: '1.5rem' },
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}
-      >
-        <DeliveryIcon color="primary" />
-        Active Deliveries
-      </Typography>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    mb: 3,
+                    fontWeight: 600,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <DeliveryIcon color="primary" />
+                  Active Deliveries
+                </Typography>
 
-      <Grid container spacing={2}>
-        {activeDeliveries.map((delivery, index) => (
+                <Grid container spacing={2}>
+                  {activeDeliveries.map((delivery, index) => (
           <Grid item xs={12} key={delivery._id}>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card sx={styles.deliveryCard}>
-                <CardContent>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    justifyContent: 'space-between', 
-                    alignItems: { xs: 'flex-start', sm: 'center' }, 
-                    gap: 2,
-                    mb: 2 
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Card sx={styles.deliveryCard}>
+                          <CardContent>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              flexDirection: { xs: 'column', sm: 'row' },
+                              justifyContent: 'space-between', 
+                              alignItems: { xs: 'flex-start', sm: 'center' }, 
+                              gap: 2,
+                              mb: 2 
+                            }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Avatar
                         src={delivery.customer?.avatar}
-                        sx={{ 
-                          width: { xs: 40, sm: 50 }, 
-                          height: { xs: 40, sm: 50 },
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                        }}
+                                  sx={{ 
+                                    width: { xs: 40, sm: 50 }, 
+                                    height: { xs: 40, sm: 50 },
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                  }}
                       >
                         {delivery.customer?.name?.charAt(0)}
                       </Avatar>
-                      <Box>
-                        <Typography 
-                          variant="h6"
-                          sx={{ 
-                            fontSize: { xs: '1rem', sm: '1.1rem' },
-                            fontWeight: 600
-                          }}
-                        >
+                                <Box>
+                                  <Typography 
+                                    variant="h6"
+                                    sx={{ 
+                                      fontSize: { xs: '1rem', sm: '1.1rem' },
+                                      fontWeight: 600
+                                    }}
+                                  >
                           Order #{delivery._id}
-                        </Typography>
-                        <Typography 
-                          color="textSecondary"
-                          sx={{ 
-                            fontSize: { xs: '0.875rem', sm: '0.9rem' }
-                          }}
-                        >
+                                  </Typography>
+                                  <Typography 
+                                    color="textSecondary"
+                                    sx={{ 
+                                      fontSize: { xs: '0.875rem', sm: '0.9rem' }
+                                    }}
+                                  >
                           {delivery.customer?.name}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Chip
-                      label={delivery.status}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Chip
+                                label={delivery.status}
                       color={delivery.status === 'DELIVERED' ? 'success' : 'warning'}
                       icon={delivery.status === 'DELIVERED' ? <CheckCircleIcon /> : <PendingIcon />}
-                      sx={{ 
-                        fontWeight: 500,
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    mb: 2,
-                    gap: 1
-                  }}>
-                    <LocationIcon sx={{ color: 'text.secondary' }} />
-                    <Typography 
-                      color="textSecondary"
-                      sx={{ 
-                        fontSize: { xs: '0.875rem', sm: '0.9rem' }
-                      }}
-                    >
+                                sx={{ 
+                                  fontWeight: 500,
+                                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                                }}
+                              />
+                            </Box>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              mb: 2,
+                              gap: 1
+                            }}>
+                              <LocationIcon sx={{ color: 'text.secondary' }} />
+                              <Typography 
+                                color="textSecondary"
+                                sx={{ 
+                                  fontSize: { xs: '0.875rem', sm: '0.9rem' }
+                                }}
+                              >
                       {delivery.deliveryAddress}
-                    </Typography>
-                  </Box>
-                  <Typography 
-                    variant="body2" 
-                    color="textSecondary" 
-                    sx={{ 
-                      mb: 2,
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
+                              </Typography>
+                            </Box>
+                            <Typography 
+                              variant="body2" 
+                              color="textSecondary" 
+                              sx={{ 
+                                mb: 2,
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                              }}
+                            >
                     {new Date(delivery.createdAt).toLocaleString()}
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    gap: 2,
-                    flexDirection: { xs: 'column', sm: 'row' }
-                  }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
+                            </Typography>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              gap: 2,
+                              flexDirection: { xs: 'column', sm: 'row' }
+                            }}>
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                fullWidth
                       onClick={() => handleNavigation(`delivery/${delivery._id}`)}
-                      sx={{
-                        borderRadius: '8px',
-                        py: 1,
-                        fontSize: { xs: '0.875rem', sm: '0.9rem' },
-                        textTransform: 'none',
-                        fontWeight: 600
-                      }}
-                    >
-                      View Details
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      fullWidth
-                      startIcon={<MapIcon />}
+                                sx={{
+                                  borderRadius: '8px',
+                                  py: 1,
+                                  fontSize: { xs: '0.875rem', sm: '0.9rem' },
+                                  textTransform: 'none',
+                                  fontWeight: 600
+                                }}
+                              >
+                                View Details
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                color="primary"
+                                fullWidth
+                                startIcon={<MapIcon />}
                       onClick={() => handleNavigateToDelivery(delivery.deliveryAddress)}
-                      sx={{
-                        borderRadius: '8px',
-                        py: 1,
-                        fontSize: { xs: '0.875rem', sm: '0.9rem' },
-                        textTransform: 'none',
-                        fontWeight: 600
-                      }}
-                    >
-                      Navigate
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
+                                sx={{
+                                  borderRadius: '8px',
+                                  py: 1,
+                                  fontSize: { xs: '0.875rem', sm: '0.9rem' },
+                                  textTransform: 'none',
+                                  fontWeight: 600
+                                }}
+                              >
+                                Navigate
+                              </Button>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+                  ))}
+                </Grid>
     </>
   );
 

@@ -1409,8 +1409,8 @@ function VendorDashboard() {
                   <IconButton
                     color="primary"
                     size="large"
-                    onClick={() => handleOpenDialog()}
-                    sx={{
+                  onClick={() => handleOpenDialog()}
+                  sx={{
                       background: 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)',
                       color: 'white',
                       boxShadow: '0 4px 24px #FF6B6B55',
@@ -1422,8 +1422,8 @@ function VendorDashboard() {
                         boxShadow: '0 8px 32px #4ECDC4AA',
                       },
                       animation: 'pulse 2s infinite',
-                    }}
-                  >
+                  }}
+                >
                     <AddIcon sx={{ fontSize: 36 }} />
                   </IconButton>
                 </motion.div>

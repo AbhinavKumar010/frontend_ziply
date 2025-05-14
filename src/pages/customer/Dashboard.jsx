@@ -315,7 +315,7 @@ const animatedAvatar = {
   }
 };
 
-const MobileBottomNav = ({ cart }) => {
+const MobileBottomNav = ({ cart, onCartOpen, onProfileOpen }) => {
   const navigate = useNavigate();
   const [value, setValue] = useState(0);
 
@@ -364,7 +364,7 @@ const MobileBottomNav = ({ cart }) => {
         color={value === 2 ? 'primary' : 'default'}
         onClick={() => {
           setValue(2);
-          navigate('/customer/cart');
+          onCartOpen();
         }}
       >
         <Badge badgeContent={cart?.items?.length || 0} color="error">
@@ -375,7 +375,7 @@ const MobileBottomNav = ({ cart }) => {
         color={value === 3 ? 'primary' : 'default'}
         onClick={() => {
           setValue(3);
-          setProfileDialog(true);
+          onProfileOpen();
         }}
       >
         <Person />
@@ -397,7 +397,7 @@ const CustomerDashboard = () => {
   const [cart, setCart] = useState({ items: [], total: 0 });
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [favorites, setFavorites] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -476,6 +476,20 @@ const CustomerDashboard = () => {
     paymentMethods: []
   });
   const productsRef = useRef(null);
+
+  // Add new state for filtered products
+  const [filteredProducts, setFilteredProducts] = useState([]);
+
+  // Add new state for order details dialog
+  const [orderDetailsDialogOpen, setOrderDetailsDialogOpen] = useState(false);
+  const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
+
+  // Update useEffect to initialize filtered products
+  useEffect(() => {
+    if (products.length > 0) {
+      setFilteredProducts(products);
+    }
+  }, [products]);
 
   useEffect(() => {
     if (!user?._id) {
@@ -649,13 +663,21 @@ const CustomerDashboard = () => {
     }
   };
 
+  // Enhanced search functionality
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query.trim()) {
+      const filtered = products.filter(product => 
+        product.name.toLowerCase().includes(query.toLowerCase()) ||
+        product.description.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredProducts(filtered);
       setSearchHistory(prev => {
         const newHistory = [query, ...prev.filter(item => item !== query)].slice(0, 5);
         return newHistory;
       });
+    } else {
+      setFilteredProducts(products);
     }
   };
 
@@ -897,13 +919,30 @@ const CustomerDashboard = () => {
     setDrawerOpen(!drawerOpen);
   };
 
+  // Enhanced category filter
+  const handleCategoryClick = (categoryId) => {
+    setSelectedCategory(categoryId);
+    if (categoryId === 'all') {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(product => 
+        product.category === categoryId
+      );
+      setFilteredProducts(filtered);
+    }
+    // Scroll to products section
+    productsRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
   const renderHeader = () => (
-    <motion.div
+            <motion.div
       initial="hidden"
       animate="visible"
       variants={staggerContainer}
     >
-      {/* Hero Section with Gradient Background */}
       <Box
         sx={{
           ...animatedGradient,
@@ -972,36 +1011,38 @@ const CustomerDashboard = () => {
         </Container>
       </Box>
 
-      {/* Search Bar */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
         <Box sx={{ ...styles.searchBar }}>
-          <TextField
-            fullWidth
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
+              <TextField
+                fullWidth
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
                   <Search />
-                </InputAdornment>
-              ),
+                    </InputAdornment>
+                  ),
               endAdornment: searchQuery && (
                 <InputAdornment position="end">
                   <IconButton
                     size="small"
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => {
+                      setSearchQuery('');
+                      setFilteredProducts(products);
+                    }}
                   >
                     <Close fontSize="small" />
                   </IconButton>
                 </InputAdornment>
               )
             }}
-            sx={{
+                sx={{
               '& .MuiOutlinedInput-root': {
                 ...glassCard,
                 '&:hover': {
@@ -1010,8 +1051,37 @@ const CustomerDashboard = () => {
               }
             }}
           />
-        </Box>
-      </motion.div>
+          {searchQuery && searchHistory.length > 0 && (
+            <Paper
+              sx={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                mt: 1,
+                zIndex: 1000,
+                maxHeight: 200,
+                overflow: 'auto'
+              }}
+            >
+              <List>
+                {searchHistory.map((item, index) => (
+                  <ListItem
+                    key={index}
+                    button
+                    onClick={() => handleSearch(item)}
+                  >
+                    <ListItemIcon>
+                      <History fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary={item} />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          )}
+              </Box>
+            </motion.div>
     </motion.div>
   );
 
@@ -1022,34 +1092,35 @@ const CustomerDashboard = () => {
       variants={staggerContainer}
     >
       <Container maxWidth="lg">
-        <Typography
-          variant="h5"
-          sx={{
+      <Typography 
+        variant="h5" 
+        sx={{ 
             fontWeight: 700,
-            mb: { xs: 2, sm: 3 },
+          mb: { xs: 2, sm: 3 }, 
             color: 'text.primary',
             textAlign: { xs: 'center', sm: 'left' }
           }}
         >
-          Categories
-        </Typography>
+        Categories
+      </Typography>
         <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-          {categories.map((category, index) => (
+        {categories.map((category, index) => (
             <Grid item xs={6} sm={4} md={3} key={category.id}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.05 }}
-              >
+            >
                 <Card
-                  onClick={() => scrollToProducts(category.id)}
-                  sx={{
+                  onClick={() => handleCategoryClick(category.id)}
+                  sx={{ 
                     ...glassCard,
                     ...styles.categoryCard,
                     '&:hover': {
                       ...glowingBorder
-                    }
+                    },
+                    cursor: 'pointer'
                   }}
                 >
                   <Box
@@ -1069,26 +1140,26 @@ const CustomerDashboard = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
-                      }}
-                    >
-                      {category.icon}
+                  }}
+                >
+                  {category.icon}
                     </Box>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
                         fontWeight: 600,
                         color: 'text.primary',
                         textAlign: 'center'
-                      }}
-                    >
-                      {category.name}
-                    </Typography>
+                  }}
+                >
+                  {category.name}
+                </Typography>
                   </Box>
-                </Card>
-              </motion.div>
-            </Grid>
-          ))}
-        </Grid>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
       </Container>
     </motion.div>
   );
@@ -1098,6 +1169,7 @@ const CustomerDashboard = () => {
       initial="hidden"
       animate="visible"
       variants={staggerContainer}
+      ref={productsRef}
     >
       <Container maxWidth="lg">
         <Box sx={{ mb: { xs: 2, sm: 3 } }}>
@@ -1109,11 +1181,11 @@ const CustomerDashboard = () => {
               textAlign: { xs: 'center', sm: 'left' }
             }}
           >
-            Products
-          </Typography>
+            {selectedCategory === 'all' ? 'All Products' : `${categories.find(c => c.id === selectedCategory)?.name || ''} Products`}
+      </Typography>
         </Box>
         <Grid container spacing={{ xs: 2, sm: 3 }}>
-          {products.map((product, index) => (
+          {filteredProducts.map((product, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1121,13 +1193,13 @@ const CustomerDashboard = () => {
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
               >
-                <Card
-                  sx={{
+            <Card
+              sx={{
                     ...glassCard,
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    '&:hover': {
+                '&:hover': {
                       ...glowingBorder
                     }
                   }}
@@ -1137,25 +1209,25 @@ const CustomerDashboard = () => {
                     height="200"
                     image={product.image}
                     alt={product.name}
-                    sx={{
+                  sx={{
                       objectFit: 'cover',
                       borderBottom: '1px solid',
                       borderColor: 'divider'
                     }}
                   />
                   <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                    <Typography
+              <Typography
                       variant="h6"
-                      sx={{
+                sx={{
                         fontWeight: 600,
-                        mb: 1,
+                  mb: 1,
                         fontSize: { xs: '1rem', sm: '1.125rem' }
-                      }}
-                    >
+                }}
+              >
                       {product.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
+              </Typography>
+              <Typography
+                variant="body2"
                       color="text.secondary"
                       sx={{ mb: 2, flexGrow: 1 }}
                     >
@@ -1164,13 +1236,13 @@ const CustomerDashboard = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography
                         variant="h6"
-                        sx={{
+                sx={{
                           color: 'primary.main',
                           fontWeight: 700
                         }}
                       >
                         ₹{product.price}
-                      </Typography>
+              </Typography>
                       <Button
                         variant="contained"
                         onClick={() => handleAddToCart(product)}
@@ -1184,11 +1256,11 @@ const CustomerDashboard = () => {
                       </Button>
                     </Box>
                   </CardContent>
-                </Card>
+            </Card>
               </motion.div>
-            </Grid>
-          ))}
-        </Grid>
+          </Grid>
+        ))}
+      </Grid>
       </Container>
     </motion.div>
   );
@@ -1199,21 +1271,21 @@ const CustomerDashboard = () => {
       flexDirection: 'column', 
       gap: { xs: 1.5, sm: 2 },
       mt: { xs: 1, sm: 2 },
-      p: { xs: 1.5, sm: 2 },
+          p: { xs: 1.5, sm: 2 },
       bgcolor: 'background.paper',
       borderRadius: { xs: '8px', sm: '12px' },
       boxShadow: { xs: 'none', sm: '0 2px 8px rgba(0,0,0,0.1)' }
-    }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          fontWeight: 600,
+        }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 600,
           fontSize: { xs: '1.125rem', sm: '1.25rem' },
           mb: 1
         }}
       >
         Statistics
-      </Typography>
+          </Typography>
       <Grid container spacing={{ xs: 1, sm: 1.5 }}>
         {stats.map((stat, index) => (
           <Grid item xs={6} key={stat.title}>
@@ -1238,16 +1310,16 @@ const CustomerDashboard = () => {
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ 
                       fontWeight: 500,
                       fontSize: { xs: '0.75rem', sm: '0.875rem' }
                     }}
                   >
                     {stat.title}
-                  </Typography>
+          </Typography>
                   <Typography 
                     variant="body2" 
                     color="success.main"
@@ -1259,15 +1331,15 @@ const CustomerDashboard = () => {
                     {stat.change}
                   </Typography>
                 </Box>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
                   alignItems: 'center'
-                }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontWeight: 600,
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 600,
                       fontSize: { xs: '1rem', sm: '1.125rem' }
                     }}
                   >
@@ -1280,7 +1352,7 @@ const CustomerDashboard = () => {
                     justifyContent: 'center'
                   }}>
                     {stat.icon}
-                  </Box>
+          </Box>
                 </Box>
               </Box>
             </motion.div>
@@ -1306,8 +1378,8 @@ const CustomerDashboard = () => {
               textAlign: { xs: 'center', sm: 'left' }
             }}
           >
-            Live Orders
-          </Typography>
+          Live Orders
+        </Typography>
         </Box>
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           {liveOrders.map((order, index) => (
@@ -1329,7 +1401,7 @@ const CustomerDashboard = () => {
                     }
                   }}
                 >
-                  <CardContent>
+              <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography
                         variant="h6"
@@ -1339,33 +1411,33 @@ const CustomerDashboard = () => {
                         }}
                       >
                         Order #{order._id}
-                      </Typography>
-                      <Chip
+                </Typography>
+                  <Chip
                         label={order.status.toUpperCase()}
-                        color={
-                          order.status === 'delivered' ? 'success' :
-                          order.status === 'processing' ? 'warning' :
+                    color={
+                      order.status === 'delivered' ? 'success' :
+                      order.status === 'processing' ? 'warning' :
                           order.status === 'shipped' ? 'info' :
                           'default'
-                        }
-                        size="small"
-                      />
+                    }
+                    size="small"
+                  />
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary">
                         <strong>Items:</strong> {order.items.length}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                  </Typography>
+                <Typography variant="body2" color="text.secondary">
                         <strong>Total:</strong> ₹{order.totalAmount}
-                      </Typography>
+                </Typography>
                       <Typography variant="body2" color="text.secondary">
                         <strong>Ordered:</strong> {formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })}
                       </Typography>
                     </Box>
                     <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
+                  <Button
+                    variant="outlined"
+                    size="small"
                         onClick={() => handleViewOrder(order)}
                         sx={{
                           borderColor: 'primary.main',
@@ -1377,10 +1449,10 @@ const CustomerDashboard = () => {
                         }}
                       >
                         View Details
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
+                  </Button>
+        </Box>
+      </CardContent>
+    </Card>
               </motion.div>
             </Grid>
           ))}
@@ -1406,7 +1478,7 @@ const CustomerDashboard = () => {
             }}
           >
             Trending Products
-          </Typography>
+        </Typography>
         </Box>
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           {trendingProducts.map((product, index) => (
@@ -1443,20 +1515,20 @@ const CustomerDashboard = () => {
                     <Typography
                       variant="h6"
                       sx={{
-                        fontWeight: 600,
+            fontWeight: 600,
                         mb: 1,
                         fontSize: { xs: '1rem', sm: '1.125rem' }
                       }}
                     >
                       {product.name}
-                    </Typography>
+          </Typography>
                     <Typography
                       variant="body2"
                       color="text.secondary"
                       sx={{ mb: 2, flexGrow: 1 }}
                     >
                       {product.description}
-                    </Typography>
+            </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography
                         variant="h6"
@@ -1466,19 +1538,19 @@ const CustomerDashboard = () => {
                         }}
                       >
                         ₹{product.price}
-                      </Typography>
-                      <Button
-                        variant="contained"
+            </Typography>
+          <Button
+            variant="contained"
                         onClick={() => handleAddToCart(product)}
-                        sx={{
-                          ...buttonStyles,
+            sx={{
+              ...buttonStyles,
                           minWidth: 'auto',
                           px: 2
-                        }}
-                      >
+            }}
+          >
                         Add to Cart
-                      </Button>
-                    </Box>
+          </Button>
+        </Box>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -1506,8 +1578,8 @@ const CustomerDashboard = () => {
             }}
           >
             Recommended for You
-          </Typography>
-        </Box>
+              </Typography>
+            </Box>
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           {recommendations.map((product, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
@@ -1549,7 +1621,7 @@ const CustomerDashboard = () => {
                       }}
                     >
                       {product.name}
-                    </Typography>
+            </Typography>
                     <Typography
                       variant="body2"
                       color="text.secondary"
@@ -1566,19 +1638,19 @@ const CustomerDashboard = () => {
                         }}
                       >
                         ₹{product.price}
-                      </Typography>
-                      <Button
-                        variant="contained"
+          </Typography>
+          <Button
+            variant="contained"
                         onClick={() => handleAddToCart(product)}
-                        sx={{
-                          ...buttonStyles,
+            sx={{
+              ...buttonStyles,
                           minWidth: 'auto',
                           px: 2
-                        }}
-                      >
+            }}
+          >
                         Add to Cart
-                      </Button>
-                    </Box>
+          </Button>
+        </Box>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -1875,26 +1947,26 @@ const CustomerDashboard = () => {
       open={cartOpen}
       onClose={() => setCartOpen(false)}
       maxWidth="sm"
-      fullWidth
+                fullWidth
       PaperProps={{
         sx: {
           borderRadius: { xs: 0, sm: 2 },
           bgcolor: 'background.paper',
           boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
         }
-                }}
-              >
+      }}
+    >
       <DialogTitle>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Shopping Cart
-                  </Typography>
+        </Typography>
       </DialogTitle>
       <DialogContent>
         {cart.items.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography variant="h6" color="text.secondary">
               Your cart is empty
-                </Typography>
+            </Typography>
           </Box>
         ) : (
           <List>
@@ -1913,7 +1985,7 @@ const CustomerDashboard = () => {
                   </IconButton>
                   <Typography>{item.quantity}</Typography>
                   <IconButton
-                      size="small"
+                    size="small"
                     onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                   >
                     <Add />
@@ -1924,19 +1996,34 @@ const CustomerDashboard = () => {
           </List>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setCartOpen(false)}>Close</Button>
-        {cart.items.length > 0 && (
-                  <Button
-            variant="contained"
-            onClick={() => {
-              setCartOpen(false);
-              setCheckoutOpen(true);
-            }}
-                  >
-            Checkout
-                  </Button>
-        )}
+      <DialogActions sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+          <Typography variant="h6">
+            Total: ₹{cart.total}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button onClick={() => setCartOpen(false)}>
+              Close
+            </Button>
+            {cart.items.length > 0 && (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setCartOpen(false);
+                  setCheckoutOpen(true);
+                }}
+                sx={{
+                  bgcolor: 'primary.main',
+                  '&:hover': {
+                    bgcolor: 'primary.dark'
+                  }
+                }}
+              >
+                Checkout
+              </Button>
+            )}
+        </Box>
+        </Box>
       </DialogActions>
     </Dialog>
   );
@@ -1958,7 +2045,7 @@ const CustomerDashboard = () => {
       <DialogTitle>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Checkout
-        </Typography>
+                  </Typography>
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
@@ -1982,7 +2069,7 @@ const CustomerDashboard = () => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setCheckoutOpen(false)}>Cancel</Button>
-        <Button
+                  <Button
           variant="contained"
           onClick={() => {
             setCheckoutOpen(false);
@@ -1990,7 +2077,7 @@ const CustomerDashboard = () => {
           }}
         >
           Place Order
-        </Button>
+                  </Button>
       </DialogActions>
     </Dialog>
   );
@@ -2017,7 +2104,7 @@ const CustomerDashboard = () => {
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           Your order has been placed and will be delivered soon.
         </Typography>
-        <Button
+                  <Button
           variant="contained"
           onClick={() => {
             setOrderSuccessOpen(false);
@@ -2025,8 +2112,141 @@ const CustomerDashboard = () => {
           }}
         >
           View Orders
-        </Button>
+                  </Button>
       </DialogContent>
+    </Dialog>
+  );
+
+  // Add function to handle view order details
+  const handleViewOrder = (order) => {
+    setSelectedOrderDetails(order);
+    setOrderDetailsDialogOpen(true);
+  };
+
+  // Add new render function for order details dialog
+  const renderOrderDetailsDialog = () => (
+    <Dialog
+      open={orderDetailsDialogOpen}
+      onClose={() => {
+        setOrderDetailsDialogOpen(false);
+        setSelectedOrderDetails(null);
+      }}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 2 },
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogTitle>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Order Details
+          </Typography>
+          <Chip
+            label={selectedOrderDetails?.status?.toUpperCase()}
+            color={
+              selectedOrderDetails?.status === 'delivered' ? 'success' :
+              selectedOrderDetails?.status === 'processing' ? 'warning' :
+              selectedOrderDetails?.status === 'shipped' ? 'info' :
+              selectedOrderDetails?.status === 'cancelled' ? 'error' :
+              'default'
+            }
+            size="small"
+          />
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        {selectedOrderDetails && (
+          <Box sx={{ mt: 2 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                  Order Information
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2">
+                    <strong>Order ID:</strong> #{selectedOrderDetails._id}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Order Date:</strong> {new Date(selectedOrderDetails.createdAt).toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Status:</strong> {selectedOrderDetails.status}
+                  </Typography>
+                  {selectedOrderDetails.cancellationReason && (
+                    <Typography variant="body2" color="error">
+                      <strong>Cancellation Reason:</strong> {selectedOrderDetails.cancellationReason}
+                    </Typography>
+                  )}
+                </Box>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                  Items
+                </Typography>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Item</TableCell>
+                        <TableCell>Quantity</TableCell>
+                        <TableCell>Price</TableCell>
+                        <TableCell>Total</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selectedOrderDetails.items.map((item) => (
+                        <TableRow key={item._id}>
+                          <TableCell>{item.name}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>₹{item.price}</TableCell>
+                          <TableCell>₹{item.price * item.quantity}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                  <Typography variant="h6">
+                    Total Amount
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    ₹{selectedOrderDetails.totalAmount}
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => {
+          setOrderDetailsDialogOpen(false);
+          setSelectedOrderDetails(null);
+        }}>
+          Close
+        </Button>
+        {selectedOrderDetails?.status === 'processing' && (
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              setOrderDetailsDialogOpen(false);
+              handleCancelOrder(selectedOrderDetails);
+            }}
+          >
+            Cancel Order
+          </Button>
+        )}
+      </DialogActions>
     </Dialog>
   );
 
@@ -2407,7 +2627,7 @@ const CustomerDashboard = () => {
             <Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'white' }}>
                 {user?.name || 'Customer'}
-              </Typography>
+        </Typography>
               <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
                 {user?.email || 'No email provided'}
               </Typography>
@@ -2569,7 +2789,11 @@ const CustomerDashboard = () => {
             </Grid>
           </Grid>
         </Container>
-        <MobileBottomNav cart={cart} />
+        <MobileBottomNav 
+          cart={cart} 
+          onCartOpen={() => setCartOpen(true)}
+          onProfileOpen={() => setProfileDialog(true)}
+        />
       </Box>
 
       {renderProfileDialog()}
@@ -2579,6 +2803,7 @@ const CustomerDashboard = () => {
       {renderCart()}
       {renderCheckout()}
       {renderOrderSuccess()}
+      {renderOrderDetailsDialog()}
 
       <Snackbar
         open={snackbar.open}
