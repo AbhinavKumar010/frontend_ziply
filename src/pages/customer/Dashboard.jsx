@@ -1,4 +1,3 @@
-
 import {
   Box,
   Container,
@@ -49,6 +48,7 @@ import {
   InputLabel,
   FormGroup,
 } from '@mui/material';
+import { useState, useEffect } from 'react';
 import {
   Search,
   ShoppingCart,

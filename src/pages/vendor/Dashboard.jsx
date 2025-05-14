@@ -308,6 +308,65 @@ const MobileBottomNav = ({ selectedTab, handleNavigation, dashboardStats }) => (
   </Box>
 );
 
+const MobileMenu = ({ open, onClose, menuItems, selectedTab, handleNavigation }) => (
+  <Drawer
+    anchor="right"
+    open={open}
+    onClose={onClose}
+    PaperProps={{
+      sx: {
+        width: '100%',
+        maxWidth: 300,
+        bgcolor: 'background.paper',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+      }
+    }}
+  >
+    <Box sx={{ p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6">Menu</Typography>
+        <IconButton onClick={onClose}>
+          <CloseIcon />
+        </IconButton>
+      </Box>
+      <List>
+        {menuItems.map((item) => (
+          <ListItem key={item.id} disablePadding>
+            <ListItemButton
+              selected={selectedTab === item.id}
+              onClick={() => {
+                handleNavigation(item.id);
+                onClose();
+              }}
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                '&.Mui-selected': {
+                  bgcolor: 'primary.lighter',
+                  '&:hover': {
+                    bgcolor: 'primary.lighter',
+                  },
+                },
+              }}
+            >
+              <ListItemIcon sx={{ color: selectedTab === item.id ? 'primary.main' : 'inherit' }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.label}
+                primaryTypographyProps={{
+                  fontWeight: selectedTab === item.id ? 'bold' : 'normal',
+                  color: 'text.primary'
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  </Drawer>
+);
+
 function VendorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
