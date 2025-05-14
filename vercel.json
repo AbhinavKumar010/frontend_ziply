@@ -18,6 +18,13 @@
       "continue": true
     },
     {
+      "src": "/assets/.*\\.js$",
+      "headers": {
+        "content-type": "application/javascript"
+      },
+      "continue": true
+    },
+    {
       "src": "/manifest.json",
       "headers": {
         "cache-control": "public, max-age=0, must-revalidate",
