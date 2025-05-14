@@ -1737,7 +1737,7 @@ function VendorDashboard() {
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
         {selectedProduct ? 'Edit Product' : 'Add New Product'}
           </Typography>
-          <IconButton onClick={handleCloseDialog} sx={{ color: 'white' }}>
+          <IconButton onClick={handleCloseDialog} sx={{ color: 'red' }}>
             <Close />
           </IconButton>
         </Box>
