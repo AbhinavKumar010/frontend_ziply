@@ -117,18 +117,18 @@ const buttonStyles = {
 const styles = {
   gradientBackground: {
     background: 'linear-gradient(135deg,rgb(191, 50, 50) 0%, #FF6B6B 100%)',
-    borderRadius: { xs: '0 0 16px 16px', sm: '0 0 24px 24px' },
+    borderRadius: { xs: '0', sm: '0 0 24px 24px' },
     boxShadow: '0 4px 20px rgba(255, 0, 0, 0.2)',
-    minHeight: { xs: '180px', sm: '220px', md: '280px' },
+    minHeight: { xs: '140px', sm: '180px', md: '220px' },
     display: 'flex',
     alignItems: 'center',
-    padding: { xs: 2, sm: 3, md: 4 }
+    padding: { xs: 1.5, sm: 2, md: 3 }
   },
   cardHover: {
     transition: 'all 0.3s ease',
     '&:hover': {
-      transform: 'translateY(-8px)',
-      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+      transform: { xs: 'none', sm: 'translateY(-8px)' },
+      boxShadow: { xs: '0 4px 12px rgba(0,0,0,0.1)', sm: '0 12px 24px rgba(0,0,0,0.15)' },
     }
   },
   responsiveGrid: {
@@ -139,36 +139,36 @@ const styles = {
       md: 'repeat(3, 1fr)',
       lg: 'repeat(4, 1fr)'
     },
-    gap: { xs: 2, sm: 2.5, md: 3 },
+    gap: { xs: 1.5, sm: 2, md: 2.5 },
     width: '100%',
-    mt: { xs: 2, sm: 3, md: 4 }
+    mt: { xs: 1.5, sm: 2, md: 3 }
   },
   productCard: {
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    borderRadius: { xs: '12px', sm: '16px' },
+    borderRadius: { xs: '8px', sm: '12px' },
     overflow: 'hidden',
     transition: 'all 0.3s ease',
     '&:hover': {
-      transform: 'translateY(-8px)',
-      boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+      transform: { xs: 'none', sm: 'translateY(-8px)' },
+      boxShadow: { xs: '0 4px 12px rgba(0,0,0,0.1)', sm: '0 12px 24px rgba(0,0,0,0.15)' },
     }
   },
   categoryCard: {
-    p: { xs: 1.5, sm: 2 },
+    p: { xs: 1, sm: 1.5 },
     textAlign: 'center',
     cursor: 'pointer',
-    borderRadius: { xs: '12px', sm: '16px' },
+    borderRadius: { xs: '8px', sm: '12px' },
     transition: 'all 0.3s ease',
-    height: { xs: '100px', sm: '120px', md: '140px' },
+    height: { xs: '80px', sm: '100px', md: '120px' },
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     '&:hover': {
-      transform: 'translateY(-4px)',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+      transform: { xs: 'none', sm: 'translateY(-4px)' },
+      boxShadow: { xs: '0 4px 12px rgba(0,0,0,0.1)', sm: '0 8px 24px rgba(0,0,0,0.15)' },
       bgcolor: 'rgba(255, 107, 107, 0.05)',
     }
   },
@@ -176,26 +176,26 @@ const styles = {
     width: '100%',
     maxWidth: { xs: '100%', sm: '500px', md: '600px' },
     mx: 'auto',
-    mt: { xs: 2, sm: 2.5, md: 3 },
+    mt: { xs: 1.5, sm: 2, md: 2.5 },
     position: 'relative',
     '& .MuiOutlinedInput-root': {
-      borderRadius: { xs: '8px', sm: '12px' },
+      borderRadius: { xs: '6px', sm: '8px' },
       bgcolor: 'rgba(255,255,255,0.95)',
       transition: 'all 0.3s ease',
-      height: { xs: '44px', sm: '48px' },
+      height: { xs: '40px', sm: '44px' },
       '&:hover': {
         bgcolor: 'rgba(255,255,255,1)',
-        transform: 'translateY(-2px)',
+        transform: { xs: 'none', sm: 'translateY(-2px)' },
       },
       '&.Mui-focused': {
         bgcolor: 'white',
-        transform: 'translateY(-2px)',
+        transform: { xs: 'none', sm: 'translateY(-2px)' },
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
       }
     },
     '& .MuiOutlinedInput-input': {
       fontSize: { xs: '0.875rem', sm: '1rem' },
-      padding: { xs: '10px 14px', sm: '12px 16px' }
+      padding: { xs: '8px 12px', sm: '10px 14px' }
     }
   },
   mobileNav: {
@@ -211,7 +211,8 @@ const styles = {
     px: 1,
     py: 0.5,
     justifyContent: 'space-around',
-    boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+    boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+    height: '56px'
   },
   dialogPaper: {
     borderRadius: { xs: 0, sm: '16px' },
@@ -224,28 +225,28 @@ const styles = {
     display: 'flex',
     flexDirection: { xs: 'column', sm: 'row' },
     alignItems: { xs: 'flex-start', sm: 'center' },
-    gap: { xs: 2, sm: 3 },
-    padding: { xs: 2, sm: 3 },
+    gap: { xs: 1.5, sm: 2 },
+    padding: { xs: 1.5, sm: 2 },
     borderBottom: '1px solid',
     borderColor: 'divider'
   },
   cartItemImage: {
     width: { xs: '100%', sm: '80px' },
-    height: { xs: '200px', sm: '80px' },
+    height: { xs: '160px', sm: '80px' },
     objectFit: 'cover',
-    borderRadius: { xs: '8px', sm: '4px' }
+    borderRadius: { xs: '6px', sm: '4px' }
   },
   cartItemDetails: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    gap: 1
+    gap: 0.5
   },
   cartItemActions: {
     display: 'flex',
     alignItems: 'center',
-    gap: 2,
-    mt: { xs: 2, sm: 0 }
+    gap: 1.5,
+    mt: { xs: 1.5, sm: 0 }
   }
 };
 
@@ -2179,21 +2180,45 @@ const CustomerDashboard = () => {
 
   const MobileBottomNav = () => (
     <Box sx={styles.mobileNav}>
-      <IconButton onClick={() => setCurrentTab('home')}>
-        <Home color={currentTab === 'home' ? 'primary' : 'inherit'} />
+      <IconButton 
+        onClick={() => setCurrentTab('home')}
+        sx={{ 
+          color: currentTab === 'home' ? '#FF0000' : 'inherit',
+          padding: '8px'
+        }}
+      >
+        <Home sx={{ fontSize: 24 }} />
       </IconButton>
-      <IconButton onClick={() => setCartOpen(true)}>
+      <IconButton 
+        onClick={() => setCartOpen(true)}
+        sx={{ 
+          color: cartOpen ? '#FF0000' : 'inherit',
+          padding: '8px'
+        }}
+      >
         <Badge badgeContent={cart.items.length} color="error">
-          <ShoppingCart color={cartOpen ? 'primary' : 'inherit'} />
+          <ShoppingCart sx={{ fontSize: 24 }} />
         </Badge>
       </IconButton>
-      <IconButton onClick={() => setNotificationsDialogOpen(true)}>
+      <IconButton 
+        onClick={() => setNotificationsDialogOpen(true)}
+        sx={{ 
+          color: notificationsDialogOpen ? '#FF0000' : 'inherit',
+          padding: '8px'
+        }}
+      >
         <Badge badgeContent={notifications.length} color="error">
-          <Notifications color={notificationsDialogOpen ? 'primary' : 'inherit'} />
+          <Notifications sx={{ fontSize: 24 }} />
         </Badge>
       </IconButton>
-      <IconButton onClick={() => setProfileDialog(true)}>
-        <Person color={profileDialog ? 'primary' : 'inherit'} />
+      <IconButton 
+        onClick={() => setProfileDialog(true)}
+        sx={{ 
+          color: profileDialog ? '#FF0000' : 'inherit',
+          padding: '8px'
+        }}
+      >
+        <Person sx={{ fontSize: 24 }} />
       </IconButton>
     </Box>
   );
@@ -2212,47 +2237,34 @@ const CustomerDashboard = () => {
           bgcolor: '#FF0000',
           boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
           '& .MuiToolbar-root': {
-            minHeight: { xs: '56px', sm: '64px' },
-            px: { xs: 1, sm: 2, md: 3 }
+            minHeight: { xs: '48px', sm: '56px' },
+            px: { xs: 1, sm: 2 }
           }
         }}
       >
-        <Toolbar sx={{ minHeight: { xs: '56px', sm: '64px' } }}>
+        <Toolbar sx={{ minHeight: { xs: '48px', sm: '56px' } }}>
           <IconButton
             color="inherit"
             edge="start"
             onClick={() => setDrawerOpen(true)}
             sx={{ 
-              mr: { xs: 1, sm: 2 },
+              mr: { xs: 0.5, sm: 1 },
               color: 'white',
-              display: { xs: 'flex', md: 'none' }, // Show only on mobile
-              transition: 'transform 0.2s',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              '&:hover': {
-                transform: 'scale(1.1)',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)'
-              }
+              display: { xs: 'flex', md: 'none' },
+              padding: { xs: '4px', sm: '8px' }
             }}
           >
-            <Menu sx={{ fontSize: 28 }} />
+            <Menu sx={{ fontSize: { xs: 24, sm: 28 } }} />
           </IconButton>
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
             flexGrow: 1,
-            '@media (max-width: 600px)': {
-              '& .MuiTypography-h5': {
-                fontSize: '1.25rem',
-              },
-            },
           }}>
             <ShoppingBag sx={{ 
-              mr: 1, 
-              fontSize: 28, 
-              color: 'white',
-              '@media (max-width: 600px)': {
-                fontSize: 24,
-              },
+              mr: 0.5, 
+              fontSize: { xs: 20, sm: 24 }, 
+              color: 'white'
             }} />
             <Typography
               variant="h5"
@@ -2263,7 +2275,7 @@ const CustomerDashboard = () => {
                 fontWeight: 700,
                 letterSpacing: '1px',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
-                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
+                fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' }
               }}
             >
               ZIPLY
@@ -2272,18 +2284,18 @@ const CustomerDashboard = () => {
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center',
-            gap: { xs: 0.5, sm: 1 }
+            gap: { xs: 0.25, sm: 0.5 }
           }}>
             <IconButton
               color="inherit"
               onClick={() => setCartOpen(true)}
               sx={{ 
                 color: 'white',
-                padding: { xs: '8px', sm: '12px' }
+                padding: { xs: '4px', sm: '8px' }
               }}
             >
               <Badge badgeContent={cart.items.length} color="error">
-                <ShoppingCart />
+                <ShoppingCart sx={{ fontSize: { xs: 20, sm: 24 } }} />
               </Badge>
             </IconButton>
             <IconButton
@@ -2291,26 +2303,27 @@ const CustomerDashboard = () => {
               onClick={() => setNotificationsDialogOpen(true)}
               sx={{ 
                 color: 'white',
-                padding: { xs: '8px', sm: '12px' }
+                padding: { xs: '4px', sm: '8px' }
               }}
             >
               <Badge badgeContent={notifications.length} color="error">
-                <Notifications />
+                <Notifications sx={{ fontSize: { xs: 20, sm: 24 } }} />
               </Badge>
             </IconButton>
             <IconButton 
               onClick={() => setProfileDialog(true)}
               sx={{
-                padding: { xs: '8px', sm: '12px' }
+                padding: { xs: '4px', sm: '8px' }
               }}
             >
               <Avatar
                 sx={{
-                  width: { xs: 28, sm: 32 },
-                  height: { xs: 28, sm: 32 },
+                  width: { xs: 24, sm: 28 },
+                  height: { xs: 24, sm: 28 },
                   bgcolor: 'white',
                   color: '#FF0000',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
                 }}
               >
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
