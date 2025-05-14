@@ -48,7 +48,7 @@ import {
   InputLabel,
   FormGroup,
 } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Search,
   ShoppingCart,
@@ -341,6 +341,7 @@ const CustomerDashboard = () => {
     savedAddresses: [],
     paymentMethods: []
   });
+  const productsRef = useRef(null);
 
   useEffect(() => {
     if (!user?._id) {
@@ -750,90 +751,13 @@ const CustomerDashboard = () => {
     },
   ];
 
-  const renderHeader = () => (
-    <Box sx={styles.gradientBackground}>
-      <Container maxWidth="lg">
-        <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="center" sx={{ py: { xs: 3, sm: 4, md: 5 } }}>
-          <Grid item xs={12} md={6}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Typography
-                variant="h4"
-                sx={{
-                  color: 'white',
-                  fontWeight: 700,
-                  mb: { xs: 1, sm: 2 },
-                  textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                  fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
-                  lineHeight: 1.2
-                }}
-              >
-                Welcome back, {user?.name || 'Customer'}! 👋
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: 'rgba(255,255,255,0.9)',
-                  mb: { xs: 2, sm: 3 },
-                  fontSize: { xs: '1rem', sm: '1.125rem' },
-                  maxWidth: '600px'
-                }}
-              >
-                Discover amazing products and get them delivered to your doorstep
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                sx={styles.searchBar}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: '#FF0000', fontSize: '1.5rem' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </motion.div>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  height: '100%',
-                  '@media (max-width: 900px)': {
-                    display: 'none',
-                  },
-                }}
-              >
-                <img
-                  src="/images/delivery-illustration.svg"
-                  alt="Delivery"
-                  style={{
-                    width: '100%',
-                    maxWidth: 500,
-                    height: 'auto',
-                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))'
-                  }}
-                />
-              </Box>
-            </motion.div>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
-  );
+  const scrollToProducts = (category) => {
+    setSelectedCategory(category);
+    productsRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
 
   const renderCategories = () => (
     <Box sx={{ mb: { xs: 3, sm: 4 } }}>
@@ -859,7 +783,18 @@ const CustomerDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <Card sx={styles.categoryCard}>
+              <Card 
+                sx={{
+                  ...styles.categoryCard,
+                  bgcolor: selectedCategory === category.id ? 'rgba(255, 107, 107, 0.1)' : 'white',
+                  border: selectedCategory === category.id ? '2px solid #FF0000' : 'none',
+                  cursor: 'pointer',
+                  '&:active': {
+                    transform: 'scale(0.98)',
+                  }
+                }}
+                onClick={() => scrollToProducts(category.id)}
+              >
                 <Typography 
                   variant="h3" 
                   sx={{ 
@@ -873,7 +808,8 @@ const CustomerDashboard = () => {
                   variant="subtitle1" 
                   sx={{ 
                     fontWeight: 500,
-                    fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }
+                    fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                    color: selectedCategory === category.id ? '#FF0000' : 'inherit'
                   }}
                 >
                   {category.name}
@@ -2223,6 +2159,124 @@ const CustomerDashboard = () => {
     </Box>
   );
 
+  const renderProducts = () => (
+    <Box ref={productsRef} sx={{ mt: 4 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        mb: 3,
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 2, sm: 0 }
+      }}>
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            fontWeight: 600,
+            fontSize: { xs: '1.25rem', sm: '1.5rem' },
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}
+        >
+          <ShoppingBag sx={{ color: 'primary.main' }} />
+          {selectedCategory === 'All' ? 'All Products' : `${categories.find(c => c.id === selectedCategory)?.name || ''} Products`}
+        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 2,
+          width: { xs: '100%', sm: 'auto' }
+        }}>
+          <FormControl 
+            size="small" 
+            sx={{ 
+              minWidth: { xs: '100%', sm: 120 },
+              bgcolor: 'white',
+              borderRadius: 1
+            }}
+          >
+            <InputLabel>Sort By</InputLabel>
+            <Select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              label="Sort By"
+            >
+              <MenuItem value="popular">Most Popular</MenuItem>
+              <MenuItem value="newest">Newest</MenuItem>
+              <MenuItem value="price_low">Price: Low to High</MenuItem>
+              <MenuItem value="price_high">Price: High to Low</MenuItem>
+            </Select>
+          </FormControl>
+          <IconButton 
+            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+            sx={{ 
+              bgcolor: 'white',
+              display: { xs: 'none', sm: 'flex' }
+            }}
+          >
+            {viewMode === 'grid' ? <GridView /> : <ViewList />}
+          </IconButton>
+        </Box>
+      </Box>
+
+      <Box sx={viewMode === 'grid' ? styles.responsiveGrid : {}}>
+        {products
+          .filter(product => selectedCategory === 'All' || product.category === selectedCategory)
+          .map((product, index) => (
+            <motion.div
+              key={product._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              {viewMode === 'grid' ? (
+                renderProductCard(product)
+              ) : (
+                <Card sx={{ mb: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
+                  <Box sx={{ 
+                    width: { xs: '100%', sm: '200px' },
+                    height: { xs: '200px', sm: 'auto' }
+                  }}>
+                    <CardMedia
+                      component="img"
+                      image={product.image}
+                      alt={product.name}
+                      sx={{ height: '100%', objectFit: 'cover' }}
+                    />
+                  </Box>
+                  <Box sx={{ flex: 1, p: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      {product.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" paragraph>
+                      {product.description}
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mt: 'auto'
+                    }}>
+                      <Typography variant="h6" color="primary">
+                        ₹{product.price}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        onClick={() => handleAddToCart(product)}
+                        disabled={!product.isAvailable || product.stock <= 0}
+                      >
+                        {!product.isAvailable ? 'Not Available' : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                      </Button>
+                    </Box>
+                  </Box>
+                </Card>
+              )}
+            </motion.div>
+          ))}
+      </Box>
+    </Box>
+  );
+
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -2680,18 +2734,18 @@ const CustomerDashboard = () => {
         sx={{
           flexGrow: 1,
           width: '100%',
-          mt: { xs: '56px', sm: '64px' },
+          mt: { xs: '48px', sm: '56px' },
           mb: { xs: '56px', md: 0 },
-          ml: { xs: 0, md: drawerOpen ? '320px' : 0 }, // Adjust margin for desktop
+          ml: { xs: 0, md: drawerOpen ? '320px' : 0 },
           transition: (theme) =>
             theme.transitions.create('margin', {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
             }),
           bgcolor: '#f8f9fa',
-          overflowX: 'hidden', // Prevent horizontal scroll
-          px: { xs: 1, sm: 2, md: 3 }, // Add horizontal padding
-          py: { xs: 2, sm: 3, md: 4 } // Add vertical padding
+          overflowX: 'hidden',
+          px: { xs: 1, sm: 2, md: 3 },
+          py: { xs: 2, sm: 3, md: 4 }
         }}
       >
         {renderHeader()}
@@ -2707,19 +2761,7 @@ const CustomerDashboard = () => {
           {renderLiveOrders()}
           {renderTrendingProducts()}
           {renderRecommendations()}
-
-          <Box sx={styles.responsiveGrid}>
-            {products.map((product, index) => (
-              <motion.div
-                key={product._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                {renderProductCard(product)}
-              </motion.div>
-            ))}
-          </Box>
+          {renderProducts()}
         </Container>
         <MobileBottomNav />
       </Box>
