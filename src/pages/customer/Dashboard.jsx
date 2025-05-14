@@ -250,6 +250,75 @@ const styles = {
   }
 };
 
+const MobileBottomNav = ({ cart }) => {
+  const navigate = useNavigate();
+  const [value, setValue] = useState(0);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  return (
+    <Paper
+      sx={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        display: { xs: 'flex', md: 'none' },
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        p: 1,
+        zIndex: 1000,
+        borderTop: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'white',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+      }}
+      elevation={3}
+    >
+      <IconButton
+        color={value === 0 ? 'primary' : 'default'}
+        onClick={() => {
+          setValue(0);
+          navigate('/customer/dashboard');
+        }}
+      >
+        <Home />
+      </IconButton>
+      <IconButton
+        color={value === 1 ? 'primary' : 'default'}
+        onClick={() => {
+          setValue(1);
+          navigate('/customer/orders');
+        }}
+      >
+        <History />
+      </IconButton>
+      <IconButton
+        color={value === 2 ? 'primary' : 'default'}
+        onClick={() => {
+          setValue(2);
+          navigate('/customer/cart');
+        }}
+      >
+        <Badge badgeContent={cart?.items?.length || 0} color="error">
+          <ShoppingCart />
+        </Badge>
+      </IconButton>
+      <IconButton
+        color={value === 3 ? 'primary' : 'default'}
+        onClick={() => {
+          setValue(3);
+          setProfileDialog(true);
+        }}
+      >
+        <Person />
+      </IconButton>
+    </Paper>
+  );
+};
+
 const CustomerDashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -760,9 +829,18 @@ const CustomerDashboard = () => {
   };
 
   const renderHeader = () => (
-    <Box sx={styles.gradientBackground}>
+    <Box sx={{
+      background: 'linear-gradient(135deg, rgb(191, 50, 50) 0%, #FF6B6B 100%)',
+      borderRadius: { xs: 0, sm: '0 0 24px 24px' },
+      boxShadow: '0 4px 20px rgba(255, 0, 0, 0.2)',
+      minHeight: { xs: '140px', sm: '180px', md: '220px' },
+      display: 'flex',
+      alignItems: 'center',
+      padding: { xs: 2, sm: 3, md: 4 },
+      mb: { xs: 2, sm: 3, md: 4 }
+    }}>
       <Container maxWidth="lg">
-        <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="center" sx={{ py: { xs: 3, sm: 4, md: 5 } }}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="center">
           <Grid item xs={12} md={6}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -776,7 +854,7 @@ const CustomerDashboard = () => {
                   fontWeight: 700,
                   mb: { xs: 1, sm: 2 },
                   textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                  fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
+                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
                   lineHeight: 1.2
                 }}
               >
@@ -787,7 +865,7 @@ const CustomerDashboard = () => {
                 sx={{
                   color: 'rgba(255,255,255,0.9)',
                   mb: { xs: 2, sm: 3 },
-                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
                   maxWidth: '600px'
                 }}
               >
@@ -798,11 +876,35 @@ const CustomerDashboard = () => {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                sx={styles.searchBar}
+                sx={{
+                  width: '100%',
+                  maxWidth: { xs: '100%', sm: '500px', md: '600px' },
+                  mx: 'auto',
+                  mt: { xs: 1, sm: 2 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: { xs: '8px', sm: '12px' },
+                    bgcolor: 'rgba(255,255,255,0.95)',
+                    transition: 'all 0.3s ease',
+                    height: { xs: '40px', sm: '48px' },
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,1)',
+                      transform: { xs: 'none', sm: 'translateY(-2px)' },
+                    },
+                    '&.Mui-focused': {
+                      bgcolor: 'white',
+                      transform: { xs: 'none', sm: 'translateY(-2px)' },
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    }
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    padding: { xs: '8px 12px', sm: '12px 16px' }
+                  }
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Search sx={{ color: '#FF0000', fontSize: '1.5rem' }} />
+                      <Search sx={{ color: '#FF0000', fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
                     </InputAdornment>
                   ),
                 }}
@@ -846,191 +948,68 @@ const CustomerDashboard = () => {
 
   const renderCategories = () => (
     <Box sx={{ 
-      display: 'flex', 
+      display: 'flex',
       flexDirection: 'column', 
-      gap: 2,
-      mt: 2
+      gap: { xs: 1.5, sm: 2 },
+      mt: { xs: 1, sm: 2 }
     }}>
-      {categories.map((category) => (
-        <motion.div
-          key={category.id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-        >
-          <Button
-            variant="outlined"
-            onClick={() => scrollToProducts(category.id)}
-            sx={{
-              width: '100%',
-              justifyContent: 'flex-start',
-              textTransform: 'none',
-              borderColor: 'rgba(255,255,255,0.1)',
-              '&:hover': {
-                borderColor: 'rgba(255,255,255,0.2)',
-              }
-            }}
-          >
-            <Box sx={{ 
-              width: 24,
-              height: 24,
-              mr: 1,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              {category.icon}
-            </Box>
-            {category.name}
-          </Button>
-        </motion.div>
-      ))}
-    </Box>
-  );
-
-  const renderStats = () => (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: 2,
-      mt: 2
-    }}>
-      {stats.map((stat, index) => (
-        <motion.div
-          key={stat.title}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-        >
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-              {stat.title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {stat.change}
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mt: 0.5
-          }}>
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-              {stat.value}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {stat.icon}
-            </Typography>
-          </Box>
-        </motion.div>
-      ))}
-    </Box>
-  );
-
-  const renderLiveOrders = () => (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: 2,
-      mt: 2
-    }}>
-      <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-        Live Orders
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          fontWeight: 600,
+          fontSize: { xs: '1.125rem', sm: '1.25rem' },
+          mb: 1
+        }}
+      >
+        Categories
       </Typography>
-      {liveOrders.map((order) => (
-        <motion.div
-          key={order._id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-        >
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {order.productName}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {order.status}
-            </Typography>
-          </Box>
-        </motion.div>
-      ))}
-    </Box>
-  );
-
-  const renderTrendingProducts = () => (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: 2,
-      mt: 2
-    }}>
-      <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-        Trending Products
-      </Typography>
-      {trendingProducts.map((product) => (
-        <motion.div
-          key={product._id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-        >
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {product.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {product.price}
-            </Typography>
-          </Box>
-        </motion.div>
-      ))}
-    </Box>
-  );
-
-  const renderRecommendations = () => (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: 2,
-      mt: 2
-    }}>
-      <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-        Recommendations
-      </Typography>
-      {recommendations.map((product) => (
-        <motion.div
-          key={product._id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-        >
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {product.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {product.price}
-            </Typography>
-          </Box>
-        </motion.div>
-      ))}
+      <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+        {categories.map((category, index) => (
+          <Grid item xs={6} sm={4} md={3} key={category.id}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Button
+                variant="outlined"
+                onClick={() => scrollToProducts(category.id)}
+                sx={{
+                  width: '100%',
+                  height: { xs: '80px', sm: '100px' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1,
+                  borderRadius: { xs: '8px', sm: '12px' },
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                    transform: { xs: 'none', sm: 'translateY(-4px)' },
+                    boxShadow: { xs: 'none', sm: '0 4px 12px rgba(0,0,0,0.1)' }
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <Typography sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
+                  {category.icon}
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 500,
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                  }}
+                >
+                  {category.name}
+                </Typography>
+              </Button>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 
@@ -1038,31 +1017,1010 @@ const CustomerDashboard = () => {
     <Box sx={{ 
       display: 'flex', 
       flexDirection: 'column', 
-      gap: 2,
-      mt: 2
+      gap: { xs: 2, sm: 3 },
+      mt: { xs: 2, sm: 3 }
     }}>
-      {products.map((product) => (
-        <motion.div
-          key={product._id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          fontWeight: 600,
+          fontSize: { xs: '1.125rem', sm: '1.25rem' },
+          mb: 1
+        }}
+      >
+        Products
+      </Typography>
+      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+        {products.map((product, index) => (
+          <Grid item xs={12} sm={6} md={4} key={product._id}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: { xs: '8px', sm: '12px' },
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: { xs: 'none', sm: 'translateY(-4px)' },
+                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.1)', sm: '0 4px 12px rgba(0,0,0,0.15)' }
+                  }
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  image={product.image}
+                  alt={product.name}
+                  sx={{
+                    height: { xs: 160, sm: 200 },
+                    objectFit: 'cover'
+                  }}
+                />
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  p: { xs: 1.5, sm: 2 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1
+                }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontSize: { xs: '1rem', sm: '1.125rem' },
+                      fontWeight: 600,
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {product.name}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ 
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      mb: 1
+                    }}
+                  >
+                    {product.description}
+                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 'auto'
+                  }}>
+                    <Typography 
+                      variant="h6" 
+                      color="primary"
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: { xs: '1rem', sm: '1.125rem' }
+                      }}
+                    >
+                      ₹{product.price}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddToCart(product)}
+                      sx={{
+                        bgcolor: 'primary.main',
+                        '&:hover': {
+                          bgcolor: 'primary.dark'
+                        },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        px: { xs: 1, sm: 2 },
+                        py: { xs: 0.5, sm: 1 }
+                      }}
+                    >
+                      Add to Cart
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+
+  const renderStats = () => (
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: { xs: 1.5, sm: 2 },
+      mt: { xs: 1, sm: 2 },
+      p: { xs: 1.5, sm: 2 },
+      bgcolor: 'background.paper',
+      borderRadius: { xs: '8px', sm: '12px' },
+      boxShadow: { xs: 'none', sm: '0 2px 8px rgba(0,0,0,0.1)' }
+    }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          fontWeight: 600,
+          fontSize: { xs: '1.125rem', sm: '1.25rem' },
+          mb: 1
+        }}
+      >
+        Statistics
+      </Typography>
+      <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+        {stats.map((stat, index) => (
+          <Grid item xs={6} key={stat.title}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Box sx={{ 
+                p: { xs: 1.5, sm: 2 },
+                bgcolor: 'background.paper',
+                borderRadius: { xs: '8px', sm: '12px' },
+                border: '1px solid',
+                borderColor: 'divider',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1
+              }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ 
+                      fontWeight: 500,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    }}
+                  >
+                    {stat.title}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    color="success.main"
+                    sx={{ 
+                      fontWeight: 600,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    }}
+                  >
+                    {stat.change}
+                  </Typography>
+                </Box>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 600,
+                      fontSize: { xs: '1rem', sm: '1.125rem' }
+                    }}
+                  >
+                    {stat.value}
+                  </Typography>
+                  <Box sx={{ 
+                    color: stat.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {stat.icon}
+                  </Box>
+                </Box>
+              </Box>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+
+  const renderLiveOrders = () => (
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: { xs: 2, sm: 3 },
+      mt: { xs: 2, sm: 3 }
+    }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          fontWeight: 600,
+          fontSize: { xs: '1.125rem', sm: '1.25rem' },
+          mb: 1
+        }}
+      >
+        Live Orders
+      </Typography>
+      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+        {liveOrders.map((order, index) => (
+          <Grid item xs={12} sm={6} md={4} key={order._id}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: { xs: '8px', sm: '12px' },
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: { xs: 'none', sm: 'translateY(-4px)' },
+                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.1)', sm: '0 4px 12px rgba(0,0,0,0.15)' }
+                  }
+                }}
+              >
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  p: { xs: 1.5, sm: 2 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1
+                }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontSize: { xs: '1rem', sm: '1.125rem' },
+                        fontWeight: 600,
+                        lineHeight: 1.2
+                      }}
+                    >
+                      Order #{order._id}
+                    </Typography>
+                    <Chip 
+                      label={order.status} 
+                      color={
+                        order.status === 'DELIVERED' ? 'success' :
+                        order.status === 'PROCESSING' ? 'primary' :
+                        order.status === 'CANCELLED' ? 'error' : 'default'
+                      }
+                      size="small"
+                    />
+                  </Box>
+                  
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ 
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      mb: 1
+                    }}
+                  >
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </Typography>
+
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 'auto'
+                  }}>
+                    <Typography 
+                      variant="h6" 
+                      color="primary"
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: { xs: '1rem', sm: '1.125rem' }
+                      }}
+                    >
+                      ₹{order.total}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => navigate(`/customer/orders/${order._id}`)}
+                      sx={{
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        px: { xs: 1, sm: 2 },
+                        py: { xs: 0.5, sm: 1 }
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+
+  const renderTrendingProducts = () => (
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: { xs: 2, sm: 3 },
+      mt: { xs: 2, sm: 3 }
+    }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          fontWeight: 600,
+          fontSize: { xs: '1.125rem', sm: '1.25rem' },
+          mb: 1
+        }}
+      >
+        Trending Products
+      </Typography>
+      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+        {trendingProducts.map((product, index) => (
+          <Grid item xs={12} sm={6} md={4} key={product._id}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: { xs: '8px', sm: '12px' },
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: { xs: 'none', sm: 'translateY(-4px)' },
+                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.1)', sm: '0 4px 12px rgba(0,0,0,0.15)' }
+                  }
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  image={product.image}
+                  alt={product.name}
+                  sx={{
+                    height: { xs: 160, sm: 200 },
+                    objectFit: 'cover'
+                  }}
+                />
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  p: { xs: 1.5, sm: 2 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1
+                }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontSize: { xs: '1rem', sm: '1.125rem' },
+                      fontWeight: 600,
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {product.name}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ 
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      mb: 1
+                    }}
+                  >
+                    {product.description}
+                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 'auto'
+                  }}>
+                    <Typography 
+                      variant="h6" 
+                      color="primary"
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: { xs: '1rem', sm: '1.125rem' }
+                      }}
+                    >
+                      ₹{product.price}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddToCart(product)}
+                      sx={{
+                        bgcolor: 'primary.main',
+                        '&:hover': {
+                          bgcolor: 'primary.dark'
+                        },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        px: { xs: 1, sm: 2 },
+                        py: { xs: 0.5, sm: 1 }
+                      }}
+                    >
+                      Add to Cart
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+
+  const renderRecommendations = () => (
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: { xs: 2, sm: 3 },
+      mt: { xs: 2, sm: 3 }
+    }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          fontWeight: 600,
+          fontSize: { xs: '1.125rem', sm: '1.25rem' },
+          mb: 1
+        }}
+      >
+        Recommendations
+      </Typography>
+      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+        {recommendations.map((product, index) => (
+          <Grid item xs={12} sm={6} md={4} key={product._id}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: { xs: '8px', sm: '12px' },
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: { xs: 'none', sm: 'translateY(-4px)' },
+                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.1)', sm: '0 4px 12px rgba(0,0,0,0.15)' }
+                  }
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  image={product.image}
+                  alt={product.name}
+                  sx={{
+                    height: { xs: 160, sm: 200 },
+                    objectFit: 'cover'
+                  }}
+                />
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  p: { xs: 1.5, sm: 2 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1
+                }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontSize: { xs: '1rem', sm: '1.125rem' },
+                      fontWeight: 600,
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {product.name}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ 
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      mb: 1
+                    }}
+                  >
+                    {product.description}
+                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 'auto'
+                  }}>
+                    <Typography 
+                      variant="h6" 
+                      color="primary"
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: { xs: '1rem', sm: '1.125rem' }
+                      }}
+                    >
+                      ₹{product.price}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAddToCart(product)}
+                      sx={{
+                        bgcolor: 'primary.main',
+                        '&:hover': {
+                          bgcolor: 'primary.dark'
+                        },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        px: { xs: 1, sm: 2 },
+                        py: { xs: 0.5, sm: 1 }
+                      }}
+                    >
+                      Add to Cart
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+
+  const renderProfileDialog = () => (
+    <Dialog
+      open={profileDialog}
+      onClose={() => setProfileDialog(false)}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 2 },
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogTitle sx={{ 
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        pb: 2
+      }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Profile Settings
+        </Typography>
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar
+              sx={{
+                width: 80,
+                height: 80,
+                bgcolor: 'primary.main',
+                fontSize: '2rem'
+              }}
+            >
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
+            </Avatar>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {user?.name || 'Customer'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {user?.email || 'No email provided'}
+              </Typography>
+            </Box>
+          </Box>
+
+          <TextField
+            label="Full Name"
+            fullWidth
+            value={profileData.name}
+            onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+          />
+          <TextField
+            label="Email"
+            fullWidth
+            value={profileData.email}
+            onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+          />
+          <TextField
+            label="Phone"
+            fullWidth
+            value={profileData.phone}
+            onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+          />
+
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={profileData.preferences.notifications}
+                  onChange={(e) => setProfileData(prev => ({
+                    ...prev,
+                    preferences: {
+                      ...prev.preferences,
+                      notifications: e.target.checked
+                    }
+                  }))}
+                />
+              }
+              label="Enable Notifications"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={profileData.preferences.emailUpdates}
+                  onChange={(e) => setProfileData(prev => ({
+                    ...prev,
+                    preferences: {
+                      ...prev.preferences,
+                      emailUpdates: e.target.checked
+                    }
+                  }))}
+                />
+              }
+              label="Email Updates"
+            />
+          </FormGroup>
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button
+          onClick={() => setProfileDialog(false)}
+          sx={{ color: 'text.secondary' }}
         >
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {product.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-              {product.price}
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            // Handle save profile
+            setProfileDialog(false);
+            showSnackbar('Profile updated successfully', 'success');
+          }}
+          sx={{
+            bgcolor: 'primary.main',
+            '&:hover': {
+              bgcolor: 'primary.dark'
+            }
+          }}
+        >
+          Save Changes
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderSettingsDialog = () => (
+    <Dialog
+      open={settingsDialogOpen}
+      onClose={() => setSettingsDialogOpen(false)}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 2 },
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogTitle>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Settings
+        </Typography>
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={settings.notifications.orderUpdates}
+                  onChange={(e) => setSettings(prev => ({
+                    ...prev,
+                    notifications: {
+                      ...prev.notifications,
+                      orderUpdates: e.target.checked
+                    }
+                  }))}
+                />
+              }
+              label="Order Updates"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={settings.notifications.promotions}
+                  onChange={(e) => setSettings(prev => ({
+                    ...prev,
+                    notifications: {
+                      ...prev.notifications,
+                      promotions: e.target.checked
+                    }
+                  }))}
+                />
+              }
+              label="Promotions"
+            />
+          </FormGroup>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setSettingsDialogOpen(false)}>Cancel</Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setSettingsDialogOpen(false);
+            showSnackbar('Settings saved successfully', 'success');
+          }}
+        >
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderNotificationsDialog = () => (
+    <Dialog
+      open={notificationsDialogOpen}
+      onClose={() => setNotificationsDialogOpen(false)}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 2 },
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogTitle>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Notifications
+        </Typography>
+      </DialogTitle>
+      <DialogContent>
+        <List>
+          {notifications.map((notification, index) => (
+            <ListItem key={index}>
+              <ListItemText
+                primary={notification.message}
+                secondary={notification.time}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setNotificationsDialogOpen(false)}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderAddressDialog = () => (
+    <Dialog
+      open={addressDialogOpen}
+      onClose={() => setAddressDialogOpen(false)}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 2 },
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogTitle>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Manage Addresses
+        </Typography>
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+          {addresses.map((address) => (
+            <Card key={address.id} variant="outlined">
+              <CardContent>
+                <Typography variant="subtitle1">{address.street}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {address.city}, {address.state} - {address.zipCode}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+          <Button
+            startIcon={<Add />}
+            onClick={() => {
+              // Handle add new address
+              setAddressDialogOpen(false);
+            }}
+          >
+            Add New Address
+          </Button>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setAddressDialogOpen(false)}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderCart = () => (
+    <Dialog
+      open={cartOpen}
+      onClose={() => setCartOpen(false)}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 2 },
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogTitle>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Shopping Cart
+        </Typography>
+      </DialogTitle>
+      <DialogContent>
+        {cart.items.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" color="text.secondary">
+              Your cart is empty
             </Typography>
           </Box>
-        </motion.div>
-      ))}
-    </Box>
+        ) : (
+          <List>
+            {cart.items.map((item) => (
+              <ListItem key={item.id}>
+                <ListItemText
+                  primary={item.name}
+                  secondary={`₹${item.price}`}
+                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                  >
+                    <Remove />
+                  </IconButton>
+                  <Typography>{item.quantity}</Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                  >
+                    <Add />
+                  </IconButton>
+                </Box>
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setCartOpen(false)}>Close</Button>
+        {cart.items.length > 0 && (
+          <Button
+            variant="contained"
+            onClick={() => {
+              setCartOpen(false);
+              setCheckoutOpen(true);
+            }}
+          >
+            Checkout
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderCheckout = () => (
+    <Dialog
+      open={checkoutOpen}
+      onClose={() => setCheckoutOpen(false)}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 2 },
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogTitle>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Checkout
+        </Typography>
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+          <Typography variant="h6">Payment Method</Typography>
+          <RadioGroup
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          >
+            <FormControlLabel
+              value="cod"
+              control={<Radio />}
+              label="Cash on Delivery"
+            />
+            <FormControlLabel
+              value="card"
+              control={<Radio />}
+              label="Credit/Debit Card"
+            />
+          </RadioGroup>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setCheckoutOpen(false)}>Cancel</Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setCheckoutOpen(false);
+            setOrderSuccessOpen(true);
+          }}
+        >
+          Place Order
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderOrderSuccess = () => (
+    <Dialog
+      open={orderSuccessOpen}
+      onClose={() => setOrderSuccessOpen(false)}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 2 },
+          bgcolor: 'background.paper',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        }
+      }}
+    >
+      <DialogContent sx={{ textAlign: 'center', py: 4 }}>
+        <CheckCircle sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Order Placed Successfully!
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Your order has been placed and will be delivered soon.
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setOrderSuccessOpen(false);
+            navigate('/customer/orders');
+          }}
+        >
+          View Orders
+        </Button>
+      </DialogContent>
+    </Dialog>
   );
 
   return (
@@ -1132,7 +2090,7 @@ const CustomerDashboard = () => {
               color="inherit"
               onClick={() => setCartOpen(true)}
               sx={{ 
-                color: 'white',
+                color: 'white', 
                 padding: { xs: '4px', sm: '8px' }
               }}
             >
@@ -1144,7 +2102,7 @@ const CustomerDashboard = () => {
               color="inherit"
               onClick={() => setNotificationsDialogOpen(true)}
               sx={{ 
-                color: 'white',
+                color: 'white', 
                 padding: { xs: '4px', sm: '8px' }
               }}
             >
@@ -1540,24 +2498,36 @@ const CustomerDashboard = () => {
         <Container 
           maxWidth="lg" 
           sx={{
-            px: { xs: 1.5, sm: 2, md: 3 },
+            px: { xs: 1, sm: 2, md: 3 },
             py: { xs: 2, sm: 3, md: 4 },
           }}
         >
           <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
             <Grid item xs={12} md={8}>
-              {renderCategories()}
-              {renderProducts()}
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: { xs: 3, sm: 4, md: 5 }
+              }}>
+                {renderCategories()}
+                {renderProducts()}
+              </Box>
             </Grid>
             <Grid item xs={12} md={4}>
-              {renderStats()}
-              {renderLiveOrders()}
-              {renderTrendingProducts()}
-              {renderRecommendations()}
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: { xs: 2, sm: 3, md: 4 }
+              }}>
+                {renderStats()}
+                {renderLiveOrders()}
+                {renderTrendingProducts()}
+                {renderRecommendations()}
+              </Box>
             </Grid>
           </Grid>
         </Container>
-        <MobileBottomNav />
+        <MobileBottomNav cart={cart} />
       </Box>
 
       {renderProfileDialog()}
