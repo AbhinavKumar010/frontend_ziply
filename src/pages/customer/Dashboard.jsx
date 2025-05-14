@@ -98,6 +98,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { formatDistanceToNow } from 'date-fns';
 import { alpha } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 
 // Define button styles
 const buttonStyles = {
@@ -118,6 +119,10 @@ const styles = {
     background: 'linear-gradient(135deg,rgb(191, 50, 50) 0%, #FF6B6B 100%)',
     borderRadius: { xs: '0 0 16px 16px', sm: '0 0 24px 24px' },
     boxShadow: '0 4px 20px rgba(255, 0, 0, 0.2)',
+    minHeight: { xs: '180px', sm: '220px', md: '280px' },
+    display: 'flex',
+    alignItems: 'center',
+    padding: { xs: 2, sm: 3, md: 4 }
   },
   cardHover: {
     transition: 'all 0.3s ease',
@@ -134,14 +139,15 @@ const styles = {
       md: 'repeat(3, 1fr)',
       lg: 'repeat(4, 1fr)'
     },
-    gap: { xs: 2, sm: 3 },
-    width: '100%'
+    gap: { xs: 2, sm: 2.5, md: 3 },
+    width: '100%',
+    mt: { xs: 2, sm: 3, md: 4 }
   },
   productCard: {
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    borderRadius: '16px',
+    borderRadius: { xs: '12px', sm: '16px' },
     overflow: 'hidden',
     transition: 'all 0.3s ease',
     '&:hover': {
@@ -150,16 +156,96 @@ const styles = {
     }
   },
   categoryCard: {
-    p: 2,
+    p: { xs: 1.5, sm: 2 },
     textAlign: 'center',
     cursor: 'pointer',
-    borderRadius: '16px',
+    borderRadius: { xs: '12px', sm: '16px' },
     transition: 'all 0.3s ease',
+    height: { xs: '100px', sm: '120px', md: '140px' },
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
     '&:hover': {
       transform: 'translateY(-4px)',
       boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
       bgcolor: 'rgba(255, 107, 107, 0.05)',
     }
+  },
+  searchBar: {
+    width: '100%',
+    maxWidth: { xs: '100%', sm: '500px', md: '600px' },
+    mx: 'auto',
+    mt: { xs: 2, sm: 2.5, md: 3 },
+    position: 'relative',
+    '& .MuiOutlinedInput-root': {
+      borderRadius: { xs: '8px', sm: '12px' },
+      bgcolor: 'rgba(255,255,255,0.95)',
+      transition: 'all 0.3s ease',
+      height: { xs: '44px', sm: '48px' },
+      '&:hover': {
+        bgcolor: 'rgba(255,255,255,1)',
+        transform: 'translateY(-2px)',
+      },
+      '&.Mui-focused': {
+        bgcolor: 'white',
+        transform: 'translateY(-2px)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+      }
+    },
+    '& .MuiOutlinedInput-input': {
+      fontSize: { xs: '0.875rem', sm: '1rem' },
+      padding: { xs: '10px 14px', sm: '12px 16px' }
+    }
+  },
+  mobileNav: {
+    display: { xs: 'flex', md: 'none' },
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    bgcolor: 'white',
+    borderTop: '1px solid',
+    borderColor: 'divider',
+    zIndex: 1000,
+    px: 1,
+    py: 0.5,
+    justifyContent: 'space-around',
+    boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+  },
+  dialogPaper: {
+    borderRadius: { xs: 0, sm: '16px' },
+    margin: { xs: 0, sm: 2 },
+    maxHeight: { xs: '100%', sm: 'calc(100% - 64px)' },
+    width: { xs: '100%', sm: '600px' },
+    maxWidth: { xs: '100%', sm: '90%', md: '600px' }
+  },
+  cartItem: {
+    display: 'flex',
+    flexDirection: { xs: 'column', sm: 'row' },
+    alignItems: { xs: 'flex-start', sm: 'center' },
+    gap: { xs: 2, sm: 3 },
+    padding: { xs: 2, sm: 3 },
+    borderBottom: '1px solid',
+    borderColor: 'divider'
+  },
+  cartItemImage: {
+    width: { xs: '100%', sm: '80px' },
+    height: { xs: '200px', sm: '80px' },
+    objectFit: 'cover',
+    borderRadius: { xs: '8px', sm: '4px' }
+  },
+  cartItemDetails: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 1
+  },
+  cartItemActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    mt: { xs: 2, sm: 0 }
   }
 };
 
@@ -240,6 +326,7 @@ const CustomerDashboard = () => {
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [orderSuccessOpen, setOrderSuccessOpen] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
+  const matches = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     if (!user?._id) {
@@ -688,23 +775,7 @@ const CustomerDashboard = () => {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                sx={{
-                  bgcolor: 'rgba(255,255,255,0.95)',
-                  borderRadius: '12px',
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,1)',
-                    },
-                    '&.Mui-focused': {
-                      bgcolor: 'white',
-                    }
-                  },
-                  '& .MuiOutlinedInput-input': {
-                    py: 1.5,
-                    fontSize: '1.1rem'
-                  }
-                }}
+                sx={styles.searchBar}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -751,13 +822,13 @@ const CustomerDashboard = () => {
   );
 
   const renderCategories = () => (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mb: { xs: 3, sm: 4 } }}>
       <Typography 
         variant="h5" 
         sx={{ 
-          mb: 3, 
+          mb: { xs: 2, sm: 3 }, 
           fontWeight: 600,
-          fontSize: { xs: '1.5rem', sm: '1.75rem' },
+          fontSize: { xs: '1.25rem', sm: '1.5rem' },
           display: 'flex',
           alignItems: 'center',
           gap: 1
@@ -766,7 +837,7 @@ const CustomerDashboard = () => {
         <Category sx={{ color: 'primary.main' }} />
         Categories
       </Typography>
-      <Grid container spacing={2}>
+      <Grid container spacing={{ xs: 1, sm: 2 }}>
         {categories.map((category, index) => (
           <Grid item xs={6} sm={4} md={3} lg={2} key={category.id}>
             <motion.div
@@ -778,8 +849,8 @@ const CustomerDashboard = () => {
                 <Typography 
                   variant="h3" 
                   sx={{ 
-                    mb: 1,
-                    fontSize: { xs: '2.5rem', sm: '3rem' }
+                    mb: { xs: 0.5, sm: 1 },
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
                   }}
                 >
                   {category.icon}
@@ -788,7 +859,7 @@ const CustomerDashboard = () => {
                   variant="subtitle1" 
                   sx={{ 
                     fontWeight: 500,
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }
                   }}
                 >
                   {category.name}
@@ -883,7 +954,7 @@ const CustomerDashboard = () => {
     
     return (
       <Card sx={styles.productCard}>
-        <Box sx={{ position: 'relative', paddingTop: '75%' }}>
+        <Box sx={{ position: 'relative', paddingTop: { xs: '100%', sm: '75%' } }}>
           <CardMedia
             component="img"
             image={imageUrl}
@@ -906,15 +977,23 @@ const CustomerDashboard = () => {
             }}
           />
         </Box>
-        <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+        <CardContent sx={{ 
+          flexGrow: 1, 
+          p: { xs: 1.5, sm: 2 },
+          '&:last-child': { pb: { xs: 1.5, sm: 2 } }
+        }}>
           <Typography 
             gutterBottom 
             variant="h6" 
             component="div" 
             sx={{ 
               fontWeight: 600,
-              fontSize: { xs: '1rem', sm: '1.1rem' },
-              mb: 1
+              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
+              mb: { xs: 0.5, sm: 1 },
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
             }}
           >
             {product.name}
@@ -923,12 +1002,13 @@ const CustomerDashboard = () => {
             variant="body2" 
             color="text.secondary" 
             sx={{ 
-              mb: 2,
+              mb: { xs: 1, sm: 2 },
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              fontSize: { xs: '0.875rem', sm: '0.9rem' }
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              minHeight: { xs: '2.4em', sm: '2.5em' }
             }}
           >
             {product.description}
@@ -937,6 +1017,8 @@ const CustomerDashboard = () => {
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1, sm: 0 },
             mt: 'auto'
           }}>
             <Typography 
@@ -944,7 +1026,7 @@ const CustomerDashboard = () => {
               color="primary"
               sx={{ 
                 fontWeight: 700,
-                fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
               }}
             >
               ₹{product.price}
@@ -955,12 +1037,14 @@ const CustomerDashboard = () => {
               onClick={() => handleAddToCart(product)}
               disabled={!product.isAvailable || product.stock <= 0}
               sx={{
-                borderRadius: '8px',
+                borderRadius: { xs: '6px', sm: '8px' },
                 px: { xs: 1.5, sm: 2 },
-                py: { xs: 0.75, sm: 1 },
-                fontSize: { xs: '0.875rem', sm: '0.9rem' },
+                py: { xs: 0.5, sm: 1 },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 textTransform: 'none',
-                fontWeight: 600
+                fontWeight: 600,
+                width: { xs: '100%', sm: 'auto' },
+                minWidth: { xs: '100%', sm: '120px' }
               }}
             >
               {!product.isAvailable ? 'Not Available' : product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
@@ -1094,97 +1178,98 @@ const CustomerDashboard = () => {
       onClose={() => setCartOpen(false)}
       maxWidth="md"
       fullWidth
+      fullScreen={matches}
       PaperProps={{
-        sx: {
-          borderRadius: '16px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-        }
+        sx: styles.dialogPaper
       }}
     >
-      <DialogTitle sx={{ bgcolor: '#FF0000', color: 'white' }}>
+      <DialogTitle sx={{ 
+        bgcolor: '#FF0000', 
+        color: 'white',
+        p: { xs: 2, sm: 3 }
+      }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>Shopping Cart</Typography>
+          <Typography variant="h6" sx={{ 
+            fontWeight: 600,
+            fontSize: { xs: '1.125rem', sm: '1.25rem' }
+          }}>
+            Shopping Cart
+          </Typography>
           <IconButton onClick={() => setCartOpen(false)} sx={{ color: 'white' }}>
             <Close />
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
         {cart.items.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <ShoppingCart sx={{ fontSize: 48, color: '#FF0000', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
+          <Box sx={{ textAlign: 'center', py: { xs: 4, sm: 6 } }}>
+            <ShoppingCart sx={{ fontSize: { xs: 40, sm: 48 }, color: '#FF0000', mb: 2 }} />
+            <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               Your cart is empty
             </Typography>
           </Box>
         ) : (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Product</TableCell>
-                  <TableCell align="right">Price</TableCell>
-                  <TableCell align="center">Quantity</TableCell>
-                  <TableCell align="right">Total</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {cart.items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 8 }}
-                        />
-                        <Typography>{item.name}</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right">₹{item.price.toFixed(2)}</TableCell>
-                    <TableCell align="center">
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                          sx={{ color: '#FF0000' }}
-                        >
-                          <Remove fontSize="small" />
-                        </IconButton>
-                        <Typography>{item.quantity}</Typography>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                          sx={{ color: '#FF0000' }}
-                        >
-                          <Add fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right">
-                      ₹{(item.price * item.quantity).toFixed(2)}
-                    </TableCell>
-                    <TableCell align="center">
+          <Box sx={{ width: '100%' }}>
+            {cart.items.map((item) => (
+              <Box key={item.id} sx={styles.cartItem}>
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  style={styles.cartItemImage}
+                />
+                <Box sx={styles.cartItemDetails}>
+                  <Typography variant="subtitle1" sx={{ fontSize: { xs: '1rem', sm: '1.125rem' } }}>
+                    {item.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    ₹{item.price.toFixed(2)}
+                  </Typography>
+                  <Box sx={styles.cartItemActions}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <IconButton
-                        color="error"
-                        onClick={() => handleRemoveFromCart(item.id)}
+                        size="small"
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                        sx={{ color: '#FF0000' }}
                       >
-                        <Delete />
+                        <Remove fontSize="small" />
                       </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                      <Typography>{item.quantity}</Typography>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                        sx={{ color: '#FF0000' }}
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </Box>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleRemoveFromCart(item.id)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
         )}
       </DialogContent>
-      <DialogActions sx={{ p: 3 }}>
+      <DialogActions sx={{ p: { xs: 2, sm: 3 }, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 2 } }}>
         <Box sx={{ width: '100%' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="h6">Total:</Typography>
-            <Typography variant="h6" sx={{ color: '#FF0000', fontWeight: 600 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            mb: { xs: 1, sm: 2 },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1, sm: 0 }
+          }}>
+            <Typography variant="h6" sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>Total:</Typography>
+            <Typography variant="h6" sx={{ 
+              color: '#FF0000', 
+              fontWeight: 600,
+              fontSize: { xs: '1.25rem', sm: '1.5rem' }
+            }}>
               ₹{cart.total.toFixed(2)}
             </Typography>
           </Box>
@@ -1197,7 +1282,11 @@ const CustomerDashboard = () => {
               setCheckoutOpen(true);
             }}
             disabled={cart.items.length === 0}
-            sx={buttonStyles}
+            sx={{
+              ...buttonStyles,
+              height: { xs: '44px', sm: '48px' },
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Proceed to Checkout
           </Button>
@@ -1276,11 +1365,9 @@ const CustomerDashboard = () => {
       onClose={() => setCheckoutOpen(false)}
       maxWidth="md"
       fullWidth
+      fullScreen={matches}
       PaperProps={{
-        sx: {
-          borderRadius: '16px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-        }
+        sx: styles.dialogPaper
       }}
     >
       <DialogTitle sx={{ bgcolor: '#FF0000', color: 'white' }}>
@@ -1471,11 +1558,9 @@ const CustomerDashboard = () => {
       onClose={() => setProfileDialogOpen(false)}
       maxWidth="sm"
       fullWidth
+      fullScreen={matches}
       PaperProps={{
-        sx: {
-          borderRadius: '16px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-        }
+        sx: styles.dialogPaper
       }}
     >
       <DialogTitle sx={{ bgcolor: '#FF0000', color: 'white' }}>
@@ -1943,6 +2028,27 @@ const CustomerDashboard = () => {
     </Dialog>
   );
 
+  const MobileBottomNav = () => (
+    <Box sx={styles.mobileNav}>
+      <IconButton onClick={() => setCurrentTab('home')}>
+        <Home color={currentTab === 'home' ? 'primary' : 'inherit'} />
+      </IconButton>
+      <IconButton onClick={() => setCartOpen(true)}>
+        <Badge badgeContent={cart.items.length} color="error">
+          <ShoppingCart color={cartOpen ? 'primary' : 'inherit'} />
+        </Badge>
+      </IconButton>
+      <IconButton onClick={() => setNotificationsDialogOpen(true)}>
+        <Badge badgeContent={notifications.length} color="error">
+          <Notifications color={notificationsDialogOpen ? 'primary' : 'inherit'} />
+        </Badge>
+      </IconButton>
+      <IconButton onClick={() => setProfileDialogOpen(true)}>
+        <Person color={profileDialogOpen ? 'primary' : 'inherit'} />
+      </IconButton>
+    </Box>
+  );
+
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -1956,15 +2062,19 @@ const CustomerDashboard = () => {
           zIndex: (theme) => theme.zIndex.drawer + 1,
           bgcolor: '#FF0000',
           boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          '& .MuiToolbar-root': {
+            minHeight: { xs: '56px', sm: '64px' },
+            px: { xs: 1, sm: 2, md: 3 }
+          }
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ minHeight: { xs: '56px', sm: '64px' } }}>
           <IconButton
             color="inherit"
             edge="start"
             onClick={() => setDrawerOpen(true)}
             sx={{ 
-              mr: 2,
+              mr: { xs: 1, sm: 2 },
               color: 'white',
               transition: 'transform 0.2s',
               '&:hover': {
@@ -2251,6 +2361,7 @@ const CustomerDashboard = () => {
           flexGrow: 1,
           width: '100%',
           mt: { xs: '56px', sm: '64px' },
+          mb: { xs: '56px', md: 0 },
           ml: { xs: 0, sm: drawerOpen ? '280px' : 0 },
           transition: (theme) =>
             theme.transitions.create('margin', {
@@ -2264,8 +2375,8 @@ const CustomerDashboard = () => {
         <Container 
           maxWidth="lg" 
           sx={{
-            px: { xs: 2, sm: 3, md: 4 },
-            py: { xs: 3, sm: 4 },
+            px: { xs: 1.5, sm: 2, md: 3 },
+            py: { xs: 2, sm: 3, md: 4 },
           }}
         >
           {renderCategories()}
@@ -2287,6 +2398,7 @@ const CustomerDashboard = () => {
             ))}
           </Box>
         </Container>
+        <MobileBottomNav />
       </Box>
 
       {renderProfileDialog()}

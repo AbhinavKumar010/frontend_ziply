@@ -5,7 +5,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
@@ -14,18 +14,23 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
+      },
+      output: {
+        manualChunks: undefined
       }
     }
   },
   server: {
     port: 5173,
     strictPort: true,
-    host: 'localhost',
+    host: true,
     cors: true,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/javascript'
+      'Content-Type': 'application/javascript',
+      'X-Content-Type-Options': 'nosniff'
     },
+    middlewareMode: false,
     hmr: {
       protocol: 'ws',
       host: 'localhost',
