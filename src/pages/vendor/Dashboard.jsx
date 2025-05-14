@@ -102,6 +102,10 @@ import {
   Sort as SortIcon,
   Close,
   AddPhotoAlternate,
+  Dashboard,
+  ShoppingCart,
+  People,
+  Inventory,
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { productAPI, orderAPI } from '../../services/api';
@@ -223,6 +227,86 @@ const staggerContainer = {
 };
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+const LoadingSkeleton = () => (
+  <Box sx={{ p: 2 }}>
+    <Grid container spacing={3}>
+      {[1, 2, 3, 4].map((item) => (
+        <Grid item xs={12} sm={6} md={3} key={item}>
+          <Card sx={{ height: 200, position: 'relative' }}>
+            <Box sx={{ p: 2 }}>
+              <Skeleton variant="text" width="60%" height={40} />
+              <Skeleton variant="text" width="40%" height={30} />
+              <Box sx={{ mt: 2 }}>
+                <Skeleton variant="rectangular" height={60} />
+              </Box>
+            </Box>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+    <Grid container spacing={3} sx={{ mt: 2 }}>
+      <Grid item xs={12} md={8}>
+        <Card>
+          <Box sx={{ p: 2 }}>
+            <Skeleton variant="text" width="40%" height={40} />
+            <Skeleton variant="rectangular" height={300} />
+          </Box>
+        </Card>
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <Card>
+          <Box sx={{ p: 2 }}>
+            <Skeleton variant="text" width="60%" height={40} />
+            {[1, 2, 3, 4].map((item) => (
+              <Box key={item} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <Skeleton variant="circular" width={40} height={40} />
+                <Box sx={{ ml: 2, width: '100%' }}>
+                  <Skeleton variant="text" width="80%" />
+                  <Skeleton variant="text" width="40%" />
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Card>
+      </Grid>
+    </Grid>
+  </Box>
+);
+
+const MobileBottomNav = ({ selectedTab, handleNavigation, dashboardStats }) => (
+  <Box
+    sx={{
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      bgcolor: 'background.paper',
+      borderTop: '1px solid',
+      borderColor: 'divider',
+      display: { xs: 'flex', sm: 'none' },
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      py: 1,
+      zIndex: 1200
+    }}
+  >
+    <IconButton onClick={() => handleNavigation('dashboard')}>
+      <Dashboard color={selectedTab === 'dashboard' ? 'primary' : 'inherit'} />
+    </IconButton>
+    <IconButton onClick={() => handleNavigation('orders')}>
+      <Badge badgeContent={dashboardStats?.pendingOrders || 0} color="error">
+        <ShoppingCart color={selectedTab === 'orders' ? 'primary' : 'inherit'} />
+      </Badge>
+    </IconButton>
+    <IconButton onClick={() => handleNavigation('products')}>
+      <Inventory color={selectedTab === 'products' ? 'primary' : 'inherit'} />
+    </IconButton>
+    <IconButton onClick={() => handleNavigation('customers')}>
+      <People color={selectedTab === 'customers' ? 'primary' : 'inherit'} />
+    </IconButton>
+  </Box>
+);
 
 function VendorDashboard() {
   const navigate = useNavigate();
@@ -2312,52 +2396,6 @@ function VendorDashboard() {
     }));
   };
 
-  const LoadingSkeleton = () => (
-    <Box sx={{ p: 2 }}>
-      <Grid container spacing={3}>
-        {[1, 2, 3, 4].map((item) => (
-          <Grid item xs={12} sm={6} md={3} key={item}>
-            <Card sx={{ height: 200, position: 'relative' }}>
-              <Box sx={{ p: 2 }}>
-                <Skeleton variant="text" width="60%" height={40} />
-                <Skeleton variant="text" width="40%" height={30} />
-                <Box sx={{ mt: 2 }}>
-                  <Skeleton variant="rectangular" height={60} />
-                </Box>
-              </Box>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-      <Grid container spacing={3} sx={{ mt: 2 }}>
-        <Grid item xs={12} md={8}>
-          <Card>
-            <Box sx={{ p: 2 }}>
-              <Skeleton variant="text" width="40%" height={40} />
-              <Skeleton variant="rectangular" height={300} />
-            </Box>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <Box sx={{ p: 2 }}>
-              <Skeleton variant="text" width="60%" height={40} />
-              {[1, 2, 3, 4].map((item) => (
-                <Box key={item} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                  <Skeleton variant="circular" width={40} height={40} />
-                  <Box sx={{ ml: 2, width: '100%' }}>
-                    <Skeleton variant="text" width="80%" />
-                    <Skeleton variant="text" width="40%" />
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
   // Add this function to handle order status updates
   const handleOrderStatusUpdate = async (orderId, newStatus) => {
     try {
@@ -2530,6 +2568,7 @@ function VendorDashboard() {
         <MobileBottomNav 
           selectedTab={selectedTab}
           handleNavigation={handleNavigation}
+          dashboardStats={dashboardStats}
         />
 
         {/* Mobile Menu Drawer */}
