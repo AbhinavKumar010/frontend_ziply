@@ -88,9 +88,6 @@ import {
   Money,
   CheckCircleOutline,
   ShoppingBag,
-  Chat,
-  CloseIcon,
-  Send,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -343,16 +340,6 @@ const CustomerDashboard = () => {
     savedAddresses: [],
     paymentMethods: []
   });
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Hello! How can I help you today?",
-      sender: "bot",
-      timestamp: new Date()
-    }
-  ]);
-  const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
     if (!user?._id) {
@@ -2211,156 +2198,6 @@ const CustomerDashboard = () => {
     </Box>
   );
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
-
-    // Add user message
-    const userMessage = {
-      id: messages.length + 1,
-      text: newMessage,
-      sender: "user",
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, userMessage]);
-    setNewMessage('');
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse = {
-        id: messages.length + 2,
-        text: "I'm here to help! What would you like to know about our services?",
-        sender: "bot",
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
-  };
-
-  const renderChatbot = () => (
-    <>
-      {/* Chat Button */}
-      <IconButton
-        onClick={() => setChatOpen(true)}
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 80, sm: 20 },
-          right: 20,
-          bgcolor: '#FF0000',
-          color: 'white',
-          width: 56,
-          height: 56,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-          '&:hover': {
-            bgcolor: '#CC0000',
-            transform: 'scale(1.1)',
-          },
-          transition: 'all 0.2s',
-          zIndex: 1000
-        }}
-      >
-        <Chat />
-      </IconButton>
-
-      {/* Chat Dialog */}
-      <Dialog
-        open={chatOpen}
-        onClose={() => setChatOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            position: 'fixed',
-            bottom: { xs: 80, sm: 20 },
-            right: 20,
-            height: 500,
-            maxHeight: '80vh',
-            borderRadius: '16px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-          }
-        }}
-      >
-        <DialogTitle sx={{ bgcolor: '#FF0000', color: 'white' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Chat Support
-            </Typography>
-            <IconButton onClick={() => setChatOpen(false)} sx={{ color: 'white' }}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
-          {/* Messages Area */}
-          <Box sx={{ 
-            flexGrow: 1, 
-            overflowY: 'auto',
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2
-          }}>
-            {messages.map((message) => (
-              <Box
-                key={message.id}
-                sx={{
-                  display: 'flex',
-                  justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                  mb: 1
-                }}
-              >
-                <Box
-                  sx={{
-                    maxWidth: '70%',
-                    p: 2,
-                    borderRadius: 2,
-                    bgcolor: message.sender === 'user' ? '#FF0000' : 'grey.100',
-                    color: message.sender === 'user' ? 'white' : 'text.primary',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  <Typography variant="body1">{message.text}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.7, display: 'block', mt: 1 }}>
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Box>
-
-          {/* Input Area */}
-          <Box sx={{ 
-            p: 2, 
-            borderTop: 1, 
-            borderColor: 'divider',
-            bgcolor: 'background.paper'
-          }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                fullWidth
-                placeholder="Type your message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                variant="outlined"
-                size="small"
-              />
-              <IconButton 
-                onClick={handleSendMessage}
-                sx={{ 
-                  bgcolor: '#FF0000',
-                  color: 'white',
-                  '&:hover': { bgcolor: '#CC0000' }
-                }}
-              >
-                <Send />
-              </IconButton>
-            </Box>
-          </Box>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -2881,7 +2718,6 @@ const CustomerDashboard = () => {
       {renderCart()}
       {renderCheckout()}
       {renderOrderSuccess()}
-      {renderChatbot()}
 
       <Snackbar
         open={snackbar.open}
