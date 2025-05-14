@@ -2182,7 +2182,7 @@ const CustomerDashboard = () => {
             width: { xs: '100%', sm: 320 },
             boxSizing: 'border-box',
             background: 'linear-gradient(180deg, rgb(191, 50, 50) 0%, #FF6B6B 100%)',
-            color: 'white',
+            color: 'rgba(245, 67, 67, 0.8)',
             borderRight: 'none',
             boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
             transition: 'transform 0.3s ease-in-out',
