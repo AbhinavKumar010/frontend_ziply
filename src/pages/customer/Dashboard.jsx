@@ -2076,6 +2076,7 @@ const CustomerDashboard = () => {
             sx={{ 
               mr: { xs: 1, sm: 2 },
               color: 'white',
+              display: { xs: 'flex', md: 'none' }, // Show only on mobile
               transition: 'transform 0.2s',
               '&:hover': {
                 transform: 'scale(1.1)',
@@ -2103,83 +2104,68 @@ const CustomerDashboard = () => {
                 fontSize: 24,
               },
             }} />
-          <Typography
+            <Typography
               variant="h5"
-            noWrap
-            component="div"
-            sx={{
+              noWrap
+              component="div"
+              sx={{
                 color: 'white',
                 fontWeight: 700,
                 letterSpacing: '1px',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
-            }}
-          >
-            ZIPLY
-          </Typography>
+                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
+              }}
+            >
+              ZIPLY
+            </Typography>
           </Box>
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center',
-            '@media (max-width: 600px)': {
-              gap: '4px',
-            },
+            gap: { xs: 0.5, sm: 1 }
           }}>
-          <IconButton
-            color="inherit"
-            onClick={() => setCartOpen(true)}
+            <IconButton
+              color="inherit"
+              onClick={() => setCartOpen(true)}
               sx={{ 
-                color: 'white', 
-                mr: 1,
-                '@media (max-width: 600px)': {
-                  mr: 0,
-                  padding: '8px',
-                },
+                color: 'white',
+                padding: { xs: '8px', sm: '12px' }
               }}
-          >
-            <Badge badgeContent={cart.items.length} color="error">
-              <ShoppingCart />
-            </Badge>
-          </IconButton>
-          <IconButton
-            color="inherit"
-            onClick={() => setNotificationsDialogOpen(true)}
+            >
+              <Badge badgeContent={cart.items.length} color="error">
+                <ShoppingCart />
+              </Badge>
+            </IconButton>
+            <IconButton
+              color="inherit"
+              onClick={() => setNotificationsDialogOpen(true)}
               sx={{ 
-                color: 'white', 
-                mr: 1,
-                '@media (max-width: 600px)': {
-                  mr: 0,
-                  padding: '8px',
-                },
+                color: 'white',
+                padding: { xs: '8px', sm: '12px' }
               }}
-          >
-            <Badge badgeContent={notifications.length} color="error">
-              <Notifications />
-            </Badge>
-          </IconButton>
+            >
+              <Badge badgeContent={notifications.length} color="error">
+                <Notifications />
+              </Badge>
+            </IconButton>
             <IconButton 
               onClick={() => setProfileDialogOpen(true)}
               sx={{
-                '@media (max-width: 600px)': {
-                  padding: '8px',
-                },
+                padding: { xs: '8px', sm: '12px' }
               }}
             >
-            <Avatar
-              sx={{
-                width: 32,
-                height: 32,
+              <Avatar
+                sx={{
+                  width: { xs: 28, sm: 32 },
+                  height: { xs: 28, sm: 32 },
                   bgcolor: 'white',
                   color: '#FF0000',
-                fontWeight: 600,
-                  '@media (max-width: 600px)': {
-                    width: 28,
-                    height: 28,
-                  },
-              }}
-            >
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
-            </Avatar>
-          </IconButton>
+                  fontWeight: 600
+                }}
+              >
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
+              </Avatar>
+            </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
@@ -2190,6 +2176,7 @@ const CustomerDashboard = () => {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         sx={{
+          display: { xs: 'block', md: 'none' }, // Show only on mobile
           '& .MuiDrawer-paper': {
             width: { xs: '100%', sm: 320 },
             boxSizing: 'border-box',
@@ -2355,6 +2342,176 @@ const CustomerDashboard = () => {
         </Box>
       </Drawer>
 
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', md: 'block' }, // Show only on desktop
+          width: 320,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: 320,
+            boxSizing: 'border-box',
+            background: 'linear-gradient(180deg, rgb(191, 50, 50) 0%, #FF6B6B 100%)',
+            color: 'white',
+            borderRight: 'none',
+            boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '100%',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
+              pointerEvents: 'none'
+            }
+          },
+        }}
+      >
+        <Box sx={{ 
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          <Box sx={{ 
+            p: 3, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            background: 'rgba(0,0,0,0.1)'
+          }}>
+            <Avatar
+              sx={{
+                width: 48,
+                height: 48,
+                bgcolor: 'white',
+                color: 'primary.main',
+                fontWeight: 600,
+                fontSize: '1.2rem',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                transition: 'transform 0.2s',
+                '&:hover': {
+                  transform: 'scale(1.05)'
+                }
+              }}
+            >
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'white' }}>
+                {user?.name || 'Customer'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                {user?.email || 'No email provided'}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ 
+            flexGrow: 1, 
+            overflowY: 'auto',
+            px: 2,
+            py: 3,
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '3px',
+              '&:hover': {
+                background: 'rgba(255,255,255,0.3)',
+              },
+            },
+          }}>
+            <List>
+              {menuItems.map((item, index) => (
+                <motion.div
+                  key={item.text}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <ListItem
+                    button
+                    onClick={item.onClick}
+                    sx={{
+                      borderRadius: '12px',
+                      mb: 1,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        transform: 'translateX(4px)',
+                      },
+                      '&.Mui-selected': {
+                        backgroundColor: 'rgba(255,255,255,0.15)',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,255,255,0.2)',
+                        }
+                      }
+                    }}
+                  >
+                    <ListItemIcon sx={{ 
+                      color: 'white', 
+                      minWidth: 40,
+                      transition: 'transform 0.2s',
+                      '&:hover': {
+                        transform: 'scale(1.1)'
+                      }
+                    }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.text}
+                      primaryTypographyProps={{
+                        fontWeight: 500,
+                        fontSize: '1rem',
+                        color: 'white'
+                      }}
+                    />
+                  </ListItem>
+                </motion.div>
+              ))}
+            </List>
+          </Box>
+
+          <Box sx={{ 
+            p: 2, 
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            background: 'rgba(0,0,0,0.1)'
+          }}>
+            <ListItem
+              button
+              onClick={handleLogout}
+              sx={{
+                borderRadius: '12px',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  transform: 'translateX(4px)',
+                }
+              }}
+            >
+              <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+                <Logout />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Logout" 
+                primaryTypographyProps={{
+                  fontWeight: 500,
+                  color: 'white'
+                }}
+              />
+            </ListItem>
+          </Box>
+        </Box>
+      </Drawer>
+
       <Box
         component="main"
         sx={{
@@ -2362,13 +2519,16 @@ const CustomerDashboard = () => {
           width: '100%',
           mt: { xs: '56px', sm: '64px' },
           mb: { xs: '56px', md: 0 },
-          ml: { xs: 0, sm: drawerOpen ? '280px' : 0 },
+          ml: { xs: 0, md: drawerOpen ? '320px' : 0 }, // Adjust margin for desktop
           transition: (theme) =>
             theme.transitions.create('margin', {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
             }),
-          bgcolor: '#f8f9fa'
+          bgcolor: '#f8f9fa',
+          overflowX: 'hidden', // Prevent horizontal scroll
+          px: { xs: 1, sm: 2, md: 3 }, // Add horizontal padding
+          py: { xs: 2, sm: 3, md: 4 } // Add vertical padding
         }}
       >
         {renderHeader()}
