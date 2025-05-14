@@ -125,6 +125,17 @@ import {
 const drawerWidth = 280;
 const collapsedDrawerWidth = 80;
 
+// Add these constants at the top with other constants
+const STOCK_UNITS = [
+  { value: 'piece', label: 'Piece' },
+  { value: 'kg', label: 'Kilogram' },
+  { value: 'g', label: 'Gram' },
+  { value: 'l', label: 'Litre' },
+  { value: 'ml', label: 'Millilitre' },
+  { value: 'box', label: 'Box' },
+  { value: 'pack', label: 'Pack' }
+];
+
 function VendorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -143,6 +154,7 @@ function VendorDashboard() {
     price: '',
     category: '',
     stock: '',
+    stockUnit: 'piece', // Add this line
     image: null,
     images: [],
   });
@@ -436,7 +448,7 @@ function VendorDashboard() {
   };
 
   const handleNavigation = (path) => {
-    navigate(`/vendor/${path}`);
+    navigate(`/vendor/dashboard/${path}`);
     setSelectedTab(path);
     if (isMobile) {
       setMobileOpen(false);
@@ -456,6 +468,7 @@ function VendorDashboard() {
         price: product.price,
         category: product.category,
         stock: product.stock,
+        stockUnit: product.stockUnit,
         image: product.image,
         images: product.images || [],
       });
@@ -468,6 +481,7 @@ function VendorDashboard() {
         price: '',
         category: '',
         stock: '',
+        stockUnit: 'piece',
         image: null,
         images: [],
       });
@@ -485,6 +499,7 @@ function VendorDashboard() {
       price: '',
       category: '',
       stock: '',
+      stockUnit: 'piece',
       image: null,
       images: [],
     });
@@ -546,6 +561,7 @@ function VendorDashboard() {
         price: parseFloat(formData.price),
         category: formData.category.trim(),
         stock: parseInt(formData.stock),
+        stockUnit: formData.stockUnit,
         images: imageFiles, // Pass the image files directly
         isAvailable: true,
         preparationTime: 15 // Default preparation time
@@ -571,6 +587,7 @@ function VendorDashboard() {
         price: '',
         category: '',
         stock: '',
+        stockUnit: 'piece',
         images: []
       });
       setImageFiles([]);
@@ -1129,28 +1146,7 @@ function VendorDashboard() {
                                     size="small"
                                   />
                                 </TableCell>
-                                <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
-                                <TableCell>
-                                  <Chip
-                                    label={order.status}
-                                    color={
-                                      order.status === 'delivered' ? 'success' :
-                                      order.status === 'pending' ? 'warning' :
-                                      order.status === 'cancelled' ? 'error' :
-                                      'default'
-                                    }
-                                    size="small"
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    size="small"
-                                    color="primary"
-                                    onClick={() => handleNavigation(`orders/${order._id}`)}
-                                  >
-                                    View
-                                  </Button>
-                                </TableCell>
+                               
                               </motion.tr>
                             ))}
                           </TableBody>
@@ -1265,7 +1261,7 @@ function VendorDashboard() {
                         <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell>
                           <Chip
-                            label={product.stock}
+                            label={`${product.stock} ${product.stockUnit}`}
                             color={product.stock < 10 ? 'error' : 'success'}
                             size="small"
                           />
@@ -1731,15 +1727,31 @@ function VendorDashboard() {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Stock"
-                type="number"
-                value={formData.stock}
-                onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
-                required
-                sx={{ mb: 2 }}
-              />
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
+                  required
+                  sx={{ mb: 2 }}
+                />
+                <FormControl sx={{ minWidth: 120, mb: 2 }}>
+                  <InputLabel>Unit</InputLabel>
+                  <Select
+                    value={formData.stockUnit}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stockUnit: e.target.value }))}
+                    label="Unit"
+                  >
+                    {STOCK_UNITS.map((unit) => (
+                      <MenuItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth sx={{ mb: 2 }}>
@@ -1754,8 +1766,8 @@ function VendorDashboard() {
                 <MenuItem value="produce">Produce</MenuItem>
                 <MenuItem value="dairy">Dairy</MenuItem>
                   <MenuItem value="bakery">Bakery</MenuItem>
-                <MenuItem value="meat">Meat</MenuItem>
-                <MenuItem value="seafood">Seafood</MenuItem>
+                
+                <MenuItem value="stallfood">Stallfood</MenuItem>
                   <MenuItem value="frozen">Frozen Foods</MenuItem>
                   <MenuItem value="snacks">Snacks</MenuItem>
                   <MenuItem value="beverages">Beverages</MenuItem>
@@ -2040,18 +2052,40 @@ function VendorDashboard() {
         >
           Close
         </Button>
+        {selectedOrder?.status === 'pending' && (
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'processing')}
+              sx={{ mr: 1 }}
+            >
+              Mark as Processing
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'cancelled')}
+              sx={{ mr: 1 }}
+            >
+              Cancel Order
+            </Button>
+          </>
+        )}
         {selectedOrder?.status === 'processing' && (
-        <Button
-          variant="contained"
+          <Button
+            variant="contained"
             color="success"
-            onClick={() => {
-              // Handle order status update
-              setOrderDetailsOpen(false);
-            }}
-            sx={{
-              bgcolor: '#4ECDC4',
-              '&:hover': { bgcolor: '#45b7af' }
-            }}
+            onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'shipped')}
+          >
+            Mark as Shipped
+          </Button>
+        )}
+        {selectedOrder?.status === 'shipped' && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'delivered')}
           >
             Mark as Delivered
           </Button>
@@ -2430,6 +2464,19 @@ function VendorDashboard() {
       </Grid>
     </Box>
   );
+
+  // Add this function to handle order status updates
+  const handleOrderStatusUpdate = async (orderId, newStatus) => {
+    try {
+      await orderAPI.updateOrderStatus(orderId, newStatus);
+      showSnackbar(`Order status updated to ${newStatus}`, 'success');
+      fetchOrders(); // Refresh orders list
+      setOrderDetailsOpen(false);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      showSnackbar('Error updating order status', 'error');
+    }
+  };
 
   return (
     <Box sx={{ 
