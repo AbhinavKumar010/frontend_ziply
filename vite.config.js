@@ -38,6 +38,14 @@ export default defineConfig({
     cors: true,
     hmr: {
       overlay: true
+    },
+    headers: {
+      'Content-Type': 'application/javascript',
+    },
+    middlewareMode: false,
+    fs: {
+      strict: true,
+      allow: ['..']
     }
   },
   resolve: {
