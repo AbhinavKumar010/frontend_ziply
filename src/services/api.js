@@ -151,6 +151,17 @@ export const orderAPI = {
   getOrderHistory: () => api.get('/orders/history'),
 };
 
+// Delivery APIs
+export const deliveryAPI = {
+  getActiveDeliveries: () => api.get('/orders/delivery/active'),
+  getDeliveryStats: () => api.get('/orders/delivery/stats'),
+  updateProfile: (profileData) => api.put('/users/delivery/profile', profileData),
+  updateSettings: (settings) => api.put('/users/delivery/settings', settings),
+  updateDeliveryStatus: (deliveryId, status) => api.patch(`/orders/${deliveryId}/status`, { status }),
+  getDeliveryHistory: () => api.get('/orders/delivery/history'),
+  getDeliveryDetails: (deliveryId) => api.get(`/orders/${deliveryId}`),
+};
+
 // User APIs
 export const userAPI = {
   getAllUsers: () => api.get('/users'),

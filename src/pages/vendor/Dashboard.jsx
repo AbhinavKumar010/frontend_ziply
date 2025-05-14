@@ -367,6 +367,48 @@ const MobileMenu = ({ open, onClose, menuItems, selectedTab, handleNavigation })
   </Drawer>
 );
 
+// Add animated gradient keyframes for hero section
+const animatedGradient = {
+  background: 'linear-gradient(270deg, #FF6B6B, #4ECDC4, #1976d2, #FF6B6B)',
+  backgroundSize: '800% 800%',
+  animation: 'gradientMove 12s ease infinite',
+};
+
+const glassCard = {
+  background: 'rgba(255,255,255,0.7)',
+  backdropFilter: 'blur(8px)',
+  borderRadius: 3,
+  boxShadow: '0 8px 32px rgba(25, 118, 210, 0.10)',
+  border: '1.5px solid rgba(255,255,255,0.3)',
+  position: 'relative',
+  overflow: 'hidden',
+};
+
+const glowingBorder = {
+  boxShadow: '0 0 16px 2px #4ECDC4, 0 0 32px 4px #FF6B6B',
+};
+
+// Add keyframes to global style
+const styleSheet = document.createElement('style');
+styleSheet.innerText = `
+@keyframes gradientMove {
+  0% {background-position:0% 50%}
+  50% {background-position:100% 50%}
+  100% {background-position:0% 50%}
+}`;
+document.head.appendChild(styleSheet);
+
+// Animated Avatar Border
+const animatedAvatar = {
+  border: '3px solid',
+  borderImage: 'linear-gradient(135deg, #FF6B6B, #4ECDC4, #1976d2) 1',
+  boxShadow: '0 0 12px #FF6B6B55',
+  transition: 'box-shadow 0.3s',
+  '&:hover': {
+    boxShadow: '0 0 24px #4ECDC4AA',
+  }
+};
+
 function VendorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -1113,12 +1155,12 @@ function VendorDashboard() {
             {/* Hero Section with Gradient Background */}
             <Box
               sx={{
+                ...animatedGradient,
                 position: 'relative',
                 height: { xs: '220px', sm: '280px', md: '320px' },
                 mb: { xs: 3, sm: 4 },
                 borderRadius: { xs: 0, sm: 3 },
                 overflow: 'hidden',
-                background: 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)',
                 boxShadow: '0 4px 32px rgba(0,0,0,0.1)'
               }}
             >
@@ -1131,7 +1173,7 @@ function VendorDashboard() {
                   bottom: 0,
                   backgroundImage: 'url("/images/dashboard-pattern.svg")',
                   backgroundSize: 'cover',
-                  opacity: 0.1
+                  opacity: 0.12
                 }}
               />
               <Container maxWidth="lg" sx={{ height: '100%', position: 'relative' }}>
@@ -1154,10 +1196,10 @@ function VendorDashboard() {
                     <Typography
                       variant="h3"
                       sx={{
-                        fontWeight: 800,
+                        fontWeight: 900,
                         mb: 2,
                         fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                        textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                        textShadow: '0 2px 8px rgba(0,0,0,0.2)',
                         letterSpacing: -1
                       }}
                     >
@@ -1221,7 +1263,38 @@ function VendorDashboard() {
                   }
                 ].map((stat, index) => (
                   <Grid item xs={12} sm={6} md={3} key={index}>
-                    <StatCard {...stat} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.04 }}
+                    >
+                      <Card sx={{ ...glassCard, ...glowingBorder }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <motion.div
+                              animate={{ rotate: [0, 10, -10, 0] }}
+                              transition={{ repeat: Infinity, duration: 2 }}
+                              style={{ display: 'inline-block' }}
+                            >
+                              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${stat.color}15`, color: stat.color, mr: 2 }}>
+                                {stat.icon}
+                              </Box>
+                            </motion.div>
+                            <Typography color="textSecondary" sx={{ fontWeight: 500, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                              {stat.title}
+                            </Typography>
+                          </Box>
+                          <Typography
+                            variant="h4"
+                            component="div"
+                            sx={{ color: stat.color, fontWeight: 700, fontSize: { xs: '1.5rem', sm: '2rem' } }}
+                          >
+                            {stat.value}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   </Grid>
                 ))}
               </Grid>
@@ -1327,18 +1400,33 @@ function VendorDashboard() {
                 <Typography variant="h5" fontWeight="bold">
                   Products
                 </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenDialog()}
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    px: 3
-                  }}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                  style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 1201 }}
                 >
-                  Add Product
-                </Button>
+                  <IconButton
+                    color="primary"
+                    size="large"
+                    onClick={() => handleOpenDialog()}
+                    sx={{
+                      background: 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)',
+                      color: 'white',
+                      boxShadow: '0 4px 24px #FF6B6B55',
+                      borderRadius: '50%',
+                      width: 64,
+                      height: 64,
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #4ECDC4 0%, #FF6B6B 100%)',
+                        boxShadow: '0 8px 32px #4ECDC4AA',
+                      },
+                      animation: 'pulse 2s infinite',
+                    }}
+                  >
+                    <AddIcon sx={{ fontSize: 36 }} />
+                  </IconButton>
+                </motion.div>
               </Box>
               <Grid container spacing={3}>
                 {products.map((product) => (
@@ -2321,16 +2409,7 @@ function VendorDashboard() {
       }}>
         <Avatar 
           src={user?.profileImage}
-          sx={{ 
-            width: drawerState.collapsed ? 40 : 48, 
-            height: drawerState.collapsed ? 40 : 48, 
-            bgcolor: 'primary.main',
-            transition: 'all 0.2s',
-            cursor: 'pointer',
-            '&:hover': {
-              opacity: 0.8
-            }
-          }}
+          sx={{ ...animatedAvatar, width: drawerState.collapsed ? 40 : 48, height: drawerState.collapsed ? 40 : 48, bgcolor: 'primary.main', transition: 'all 0.2s', cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
           onClick={() => setProfileDialog(true)}
         />
         {!drawerState.collapsed && (

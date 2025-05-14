@@ -250,6 +250,71 @@ const styles = {
   }
 };
 
+// Add animation variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+// Add animated gradient keyframes for hero section
+const animatedGradient = {
+  background: 'linear-gradient(270deg, #FF6B6B, #4ECDC4, #1976d2, #FF6B6B)',
+  backgroundSize: '800% 800%',
+  animation: 'gradientMove 12s ease infinite',
+};
+
+const glassCard = {
+  background: 'rgba(255,255,255,0.7)',
+  backdropFilter: 'blur(8px)',
+  borderRadius: 3,
+  boxShadow: '0 8px 32px rgba(25, 118, 210, 0.10)',
+  border: '1.5px solid rgba(255,255,255,0.3)',
+  position: 'relative',
+  overflow: 'hidden',
+};
+
+const glowingBorder = {
+  boxShadow: '0 0 16px 2px #4ECDC4, 0 0 32px 4px #FF6B6B',
+};
+
+// Add keyframes to global style
+const styleSheet = document.createElement('style');
+styleSheet.innerText = `
+@keyframes gradientMove {
+  0% {background-position:0% 50%}
+  50% {background-position:100% 50%}
+  100% {background-position:0% 50%}
+}`;
+document.head.appendChild(styleSheet);
+
+// Animated Avatar Border
+const animatedAvatar = {
+  border: '3px solid',
+  borderImage: 'linear-gradient(135deg, #FF6B6B, #4ECDC4, #1976d2) 1',
+  boxShadow: '0 0 12px #FF6B6B55',
+  transition: 'box-shadow 0.3s',
+  '&:hover': {
+    boxShadow: '0 0 24px #4ECDC4AA',
+  }
+};
+
 const MobileBottomNav = ({ cart }) => {
   const navigate = useNavigate();
   const [value, setValue] = useState(0);
@@ -828,306 +893,304 @@ const CustomerDashboard = () => {
     });
   };
 
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
   const renderHeader = () => (
-    <Box sx={{
-      background: 'linear-gradient(135deg, rgb(191, 50, 50) 0%, #FF6B6B 100%)',
-      borderRadius: { xs: 0, sm: '0 0 24px 24px' },
-      boxShadow: '0 4px 20px rgba(255, 0, 0, 0.2)',
-      minHeight: { xs: '140px', sm: '180px', md: '220px' },
-      display: 'flex',
-      alignItems: 'center',
-      padding: { xs: 2, sm: 3, md: 4 },
-      mb: { xs: 2, sm: 3, md: 4 }
-    }}>
-      <Container maxWidth="lg">
-        <Grid container spacing={{ xs: 2, sm: 3 }} alignItems="center">
-          <Grid item xs={12} md={6}>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      {/* Hero Section with Gradient Background */}
+      <Box
+        sx={{
+          ...animatedGradient,
+          position: 'relative',
+          height: { xs: '220px', sm: '280px', md: '320px' },
+          mb: { xs: 3, sm: 4 },
+          borderRadius: { xs: 0, sm: 3 },
+          overflow: 'hidden',
+          boxShadow: '0 4px 32px rgba(0,0,0,0.1)'
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: 'url("/images/dashboard-pattern.svg")',
+            backgroundSize: 'cover',
+            opacity: 0.12
+          }}
+        />
+        <Container maxWidth="lg" sx={{ height: '100%', position: 'relative' }}>
+          <Box
+            sx={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              color: 'white',
+              textAlign: { xs: 'center', md: 'left' },
+              px: { xs: 2, sm: 4 }
+            }}
+          >
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
               <Typography
-                variant="h4"
+                variant="h3"
                 sx={{
-                  color: 'white',
-                  fontWeight: 700,
-                  mb: { xs: 1, sm: 2 },
-                  textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
-                  lineHeight: 1.2
+                  fontWeight: 900,
+                  mb: 2,
+                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                  textShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  letterSpacing: -1
                 }}
               >
-                Welcome back, {user?.name || 'Customer'}! 👋
+                Welcome back, {user?.name || 'Customer'}!
               </Typography>
               <Typography
-                variant="subtitle1"
+                variant="h6"
                 sx={{
-                  color: 'rgba(255,255,255,0.9)',
-                  mb: { xs: 2, sm: 3 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  maxWidth: '600px'
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
+                  opacity: 0.9,
+                  fontWeight: 400,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.1)'
                 }}
               >
-                Discover amazing products and get them delivered to your doorstep
+                Discover amazing products and deals
               </Typography>
-              <TextField
-                fullWidth
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                sx={{
-                  width: '100%',
-                  maxWidth: { xs: '100%', sm: '500px', md: '600px' },
-                  mx: 'auto',
-                  mt: { xs: 1, sm: 2 },
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: { xs: '8px', sm: '12px' },
-                    bgcolor: 'rgba(255,255,255,0.95)',
-                    transition: 'all 0.3s ease',
-                    height: { xs: '40px', sm: '48px' },
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,1)',
-                      transform: { xs: 'none', sm: 'translateY(-2px)' },
-                    },
-                    '&.Mui-focused': {
-                      bgcolor: 'white',
-                      transform: { xs: 'none', sm: 'translateY(-2px)' },
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    }
-                  },
-                  '& .MuiOutlinedInput-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' },
-                    padding: { xs: '8px 12px', sm: '12px 16px' }
-                  }
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: '#FF0000', fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
             </motion.div>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  height: '100%',
-                  '@media (max-width: 900px)': {
-                    display: 'none',
-                  },
-                }}
-              >
-                <img
-                  src="/images/delivery-illustration.svg"
-                  alt="Delivery"
-                  style={{
-                    width: '100%',
-                    maxWidth: 500,
-                    height: 'auto',
-                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))'
-                  }}
-                />
-              </Box>
-            </motion.div>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Search Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Box sx={{ ...styles.searchBar }}>
+          <TextField
+            fullWidth
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+              endAdornment: searchQuery && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setSearchQuery('')}
+                  >
+                    <Close fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                ...glassCard,
+                '&:hover': {
+                  ...glowingBorder
+                }
+              }
+            }}
+          />
+        </Box>
+      </motion.div>
+    </motion.div>
   );
 
   const renderCategories = () => (
-    <Box sx={{ 
-      display: 'flex',
-      flexDirection: 'column', 
-      gap: { xs: 1.5, sm: 2 },
-      mt: { xs: 1, sm: 2 }
-    }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          fontWeight: 600,
-          fontSize: { xs: '1.125rem', sm: '1.25rem' },
-          mb: 1
-        }}
-      >
-        Categories
-      </Typography>
-      <Grid container spacing={{ xs: 1, sm: 1.5 }}>
-        {categories.map((category, index) => (
-          <Grid item xs={6} sm={4} md={3} key={category.id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Button
-                variant="outlined"
-                onClick={() => scrollToProducts(category.id)}
-                sx={{
-                  width: '100%',
-                  height: { xs: '80px', sm: '100px' },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 1,
-                  borderRadius: { xs: '8px', sm: '12px' },
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                  '&:hover': {
-                    bgcolor: 'action.hover',
-                    transform: { xs: 'none', sm: 'translateY(-4px)' },
-                    boxShadow: { xs: 'none', sm: '0 4px 12px rgba(0,0,0,0.1)' }
-                  },
-                  transition: 'all 0.3s ease'
-                }}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      <Container maxWidth="lg">
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            mb: { xs: 2, sm: 3 },
+            color: 'text.primary',
+            textAlign: { xs: 'center', sm: 'left' }
+          }}
+        >
+          Categories
+        </Typography>
+        <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+          {categories.map((category, index) => (
+            <Grid item xs={6} sm={4} md={3} key={category.id}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
               >
-                <Typography sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
-                  {category.icon}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontWeight: 500,
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                <Card
+                  onClick={() => scrollToProducts(category.id)}
+                  sx={{
+                    ...glassCard,
+                    ...styles.categoryCard,
+                    '&:hover': {
+                      ...glowingBorder
+                    }
                   }}
                 >
-                  {category.name}
-                </Typography>
-              </Button>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 1
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        bgcolor: `${category.color}15`,
+                        color: category.color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {category.icon}
+                    </Box>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontWeight: 600,
+                        color: 'text.primary',
+                        textAlign: 'center'
+                      }}
+                    >
+                      {category.name}
+                    </Typography>
+                  </Box>
+                </Card>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </motion.div>
   );
 
   const renderProducts = () => (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: { xs: 2, sm: 3 },
-      mt: { xs: 2, sm: 3 }
-    }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          fontWeight: 600,
-          fontSize: { xs: '1.125rem', sm: '1.25rem' },
-          mb: 1
-        }}
-      >
-        Products
-      </Typography>
-      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-        {products.map((product, index) => (
-          <Grid item xs={12} sm={6} md={4} key={product._id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: { xs: '8px', sm: '12px' },
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: { xs: 'none', sm: 'translateY(-4px)' },
-                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.1)', sm: '0 4px 12px rgba(0,0,0,0.15)' }
-                  }
-                }}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: 'text.primary',
+              textAlign: { xs: 'center', sm: 'left' }
+            }}
+          >
+            Products
+          </Typography>
+        </Box>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
+          {products.map((product, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <CardMedia
-                  component="img"
-                  image={product.image}
-                  alt={product.name}
+                <Card
                   sx={{
-                    height: { xs: 160, sm: 200 },
-                    objectFit: 'cover'
+                    ...glassCard,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    '&:hover': {
+                      ...glowingBorder
+                    }
                   }}
-                />
-                <CardContent sx={{ 
-                  flexGrow: 1, 
-                  p: { xs: 1.5, sm: 2 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1
-                }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontSize: { xs: '1rem', sm: '1.125rem' },
-                      fontWeight: 600,
-                      lineHeight: 1.2
+                >
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={product.image}
+                    alt={product.name}
+                    sx={{
+                      objectFit: 'cover',
+                      borderBottom: '1px solid',
+                      borderColor: 'divider'
                     }}
-                  >
-                    {product.name}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      mb: 1
-                    }}
-                  >
-                    {product.description}
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 'auto'
-                  }}>
-                    <Typography 
-                      variant="h6" 
-                      color="primary"
-                      sx={{ 
+                  />
+                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Typography
+                      variant="h6"
+                      sx={{
                         fontWeight: 600,
+                        mb: 1,
                         fontSize: { xs: '1rem', sm: '1.125rem' }
                       }}
                     >
-                      ₹{product.price}
+                      {product.name}
                     </Typography>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleAddToCart(product)}
-                      sx={{
-                        bgcolor: 'primary.main',
-                        '&:hover': {
-                          bgcolor: 'primary.dark'
-                        },
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        px: { xs: 1, sm: 2 },
-                        py: { xs: 0.5, sm: 1 }
-                      }}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2, flexGrow: 1 }}
                     >
-                      Add to Cart
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+                      {product.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: 'primary.main',
+                          fontWeight: 700
+                        }}
+                      >
+                        ₹{product.price}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        onClick={() => handleAddToCart(product)}
+                        sx={{
+                          ...buttonStyles,
+                          minWidth: 'auto',
+                          px: 2
+                        }}
+                      >
+                        Add to Cart
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </motion.div>
   );
 
   const renderStats = () => (
@@ -1228,358 +1291,302 @@ const CustomerDashboard = () => {
   );
 
   const renderLiveOrders = () => (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: { xs: 2, sm: 3 },
-      mt: { xs: 2, sm: 3 }
-    }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          fontWeight: 600,
-          fontSize: { xs: '1.125rem', sm: '1.25rem' },
-          mb: 1
-        }}
-      >
-        Live Orders
-      </Typography>
-      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-        {liveOrders.map((order, index) => (
-          <Grid item xs={12} sm={6} md={4} key={order._id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: { xs: '8px', sm: '12px' },
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: { xs: 'none', sm: 'translateY(-4px)' },
-                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.1)', sm: '0 4px 12px rgba(0,0,0,0.15)' }
-                  }
-                }}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: 'text.primary',
+              textAlign: { xs: 'center', sm: 'left' }
+            }}
+          >
+            Live Orders
+          </Typography>
+        </Box>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
+          {liveOrders.map((order, index) => (
+            <Grid item xs={12} sm={6} md={4} key={order._id}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <CardContent sx={{ 
-                  flexGrow: 1, 
-                  p: { xs: 1.5, sm: 2 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1
-                }}>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontSize: { xs: '1rem', sm: '1.125rem' },
-                        fontWeight: 600,
-                        lineHeight: 1.2
-                      }}
-                    >
-                      Order #{order._id}
-                    </Typography>
-                    <Chip 
-                      label={order.status} 
-                      color={
-                        order.status === 'DELIVERED' ? 'success' :
-                        order.status === 'PROCESSING' ? 'primary' :
-                        order.status === 'CANCELLED' ? 'error' : 'default'
-                      }
-                      size="small"
-                    />
-                  </Box>
-                  
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      mb: 1
-                    }}
-                  >
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </Typography>
-
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 'auto'
-                  }}>
-                    <Typography 
-                      variant="h6" 
-                      color="primary"
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: { xs: '1rem', sm: '1.125rem' }
-                      }}
-                    >
-                      ₹{order.total}
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => navigate(`/customer/orders/${order._id}`)}
-                      sx={{
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        px: { xs: 1, sm: 2 },
-                        py: { xs: 0.5, sm: 1 }
-                      }}
-                    >
-                      View Details
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+                <Card
+                  sx={{
+                    ...glassCard,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    '&:hover': {
+                      ...glowingBorder
+                    }
+                  }}
+                >
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: { xs: '1rem', sm: '1.125rem' }
+                        }}
+                      >
+                        Order #{order._id}
+                      </Typography>
+                      <Chip
+                        label={order.status.toUpperCase()}
+                        color={
+                          order.status === 'delivered' ? 'success' :
+                          order.status === 'processing' ? 'warning' :
+                          order.status === 'shipped' ? 'info' :
+                          'default'
+                        }
+                        size="small"
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Items:</strong> {order.items.length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Total:</strong> ₹{order.totalAmount}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Ordered:</strong> {formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleViewOrder(order)}
+                        sx={{
+                          borderColor: 'primary.main',
+                          color: 'primary.main',
+                          '&:hover': {
+                            borderColor: 'primary.dark',
+                            bgcolor: 'primary.lighter'
+                          }
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </motion.div>
   );
 
   const renderTrendingProducts = () => (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: { xs: 2, sm: 3 },
-      mt: { xs: 2, sm: 3 }
-    }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          fontWeight: 600,
-          fontSize: { xs: '1.125rem', sm: '1.25rem' },
-          mb: 1
-        }}
-      >
-        Trending Products
-      </Typography>
-      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-        {trendingProducts.map((product, index) => (
-          <Grid item xs={12} sm={6} md={4} key={product._id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: { xs: '8px', sm: '12px' },
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: { xs: 'none', sm: 'translateY(-4px)' },
-                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.1)', sm: '0 4px 12px rgba(0,0,0,0.15)' }
-                  }
-                }}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: 'text.primary',
+              textAlign: { xs: 'center', sm: 'left' }
+            }}
+          >
+            Trending Products
+          </Typography>
+        </Box>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
+          {trendingProducts.map((product, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <CardMedia
-                  component="img"
-                  image={product.image}
-                  alt={product.name}
+                <Card
                   sx={{
-                    height: { xs: 160, sm: 200 },
-                    objectFit: 'cover'
+                    ...glassCard,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    '&:hover': {
+                      ...glowingBorder
+                    }
                   }}
-                />
-                <CardContent sx={{ 
-                  flexGrow: 1, 
-                  p: { xs: 1.5, sm: 2 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1
-                }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontSize: { xs: '1rem', sm: '1.125rem' },
-                      fontWeight: 600,
-                      lineHeight: 1.2
+                >
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={product.image}
+                    alt={product.name}
+                    sx={{
+                      objectFit: 'cover',
+                      borderBottom: '1px solid',
+                      borderColor: 'divider'
                     }}
-                  >
-                    {product.name}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      mb: 1
-                    }}
-                  >
-                    {product.description}
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 'auto'
-                  }}>
-                    <Typography 
-                      variant="h6" 
-                      color="primary"
-                      sx={{ 
+                  />
+                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Typography
+                      variant="h6"
+                      sx={{
                         fontWeight: 600,
+                        mb: 1,
                         fontSize: { xs: '1rem', sm: '1.125rem' }
                       }}
                     >
-                      ₹{product.price}
+                      {product.name}
                     </Typography>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleAddToCart(product)}
-                      sx={{
-                        bgcolor: 'primary.main',
-                        '&:hover': {
-                          bgcolor: 'primary.dark'
-                        },
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        px: { xs: 1, sm: 2 },
-                        py: { xs: 0.5, sm: 1 }
-                      }}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2, flexGrow: 1 }}
                     >
-                      Add to Cart
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+                      {product.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: 'primary.main',
+                          fontWeight: 700
+                        }}
+                      >
+                        ₹{product.price}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        onClick={() => handleAddToCart(product)}
+                        sx={{
+                          ...buttonStyles,
+                          minWidth: 'auto',
+                          px: 2
+                        }}
+                      >
+                        Add to Cart
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </motion.div>
   );
 
   const renderRecommendations = () => (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: { xs: 2, sm: 3 },
-      mt: { xs: 2, sm: 3 }
-    }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          fontWeight: 600,
-          fontSize: { xs: '1.125rem', sm: '1.25rem' },
-          mb: 1
-        }}
-      >
-        Recommendations
-      </Typography>
-      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-        {recommendations.map((product, index) => (
-          <Grid item xs={12} sm={6} md={4} key={product._id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: { xs: '8px', sm: '12px' },
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: { xs: 'none', sm: 'translateY(-4px)' },
-                    boxShadow: { xs: '0 2px 8px rgba(0,0,0,0.1)', sm: '0 4px 12px rgba(0,0,0,0.15)' }
-                  }
-                }}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: 'text.primary',
+              textAlign: { xs: 'center', sm: 'left' }
+            }}
+          >
+            Recommended for You
+          </Typography>
+        </Box>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
+          {recommendations.map((product, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <CardMedia
-                  component="img"
-                  image={product.image}
-                  alt={product.name}
+                <Card
                   sx={{
-                    height: { xs: 160, sm: 200 },
-                    objectFit: 'cover'
+                    ...glassCard,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    '&:hover': {
+                      ...glowingBorder
+                    }
                   }}
-                />
-                <CardContent sx={{ 
-                  flexGrow: 1, 
-                  p: { xs: 1.5, sm: 2 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1
-                }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontSize: { xs: '1rem', sm: '1.125rem' },
-                      fontWeight: 600,
-                      lineHeight: 1.2
+                >
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={product.image}
+                    alt={product.name}
+                    sx={{
+                      objectFit: 'cover',
+                      borderBottom: '1px solid',
+                      borderColor: 'divider'
                     }}
-                  >
-                    {product.name}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      mb: 1
-                    }}
-                  >
-                    {product.description}
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 'auto'
-                  }}>
-                    <Typography 
-                      variant="h6" 
-                      color="primary"
-                      sx={{ 
+                  />
+                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Typography
+                      variant="h6"
+                      sx={{
                         fontWeight: 600,
+                        mb: 1,
                         fontSize: { xs: '1rem', sm: '1.125rem' }
                       }}
                     >
-                      ₹{product.price}
+                      {product.name}
                     </Typography>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleAddToCart(product)}
-                      sx={{
-                        bgcolor: 'primary.main',
-                        '&:hover': {
-                          bgcolor: 'primary.dark'
-                        },
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        px: { xs: 1, sm: 2 },
-                        py: { xs: 0.5, sm: 1 }
-                      }}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2, flexGrow: 1 }}
                     >
-                      Add to Cart
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+                      {product.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: 'primary.main',
+                          fontWeight: 700
+                        }}
+                      >
+                        ₹{product.price}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        onClick={() => handleAddToCart(product)}
+                        sx={{
+                          ...buttonStyles,
+                          minWidth: 'auto',
+                          px: 2
+                        }}
+                      >
+                        Add to Cart
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </motion.div>
   );
 
   const renderProfileDialog = () => (
@@ -1608,34 +1615,34 @@ const CustomerDashboard = () => {
       <DialogContent sx={{ pt: 3 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar
-              sx={{
+          <Avatar
+            sx={{
                 width: 80,
                 height: 80,
                 bgcolor: 'primary.main',
                 fontSize: '2rem'
-              }}
-            >
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
-            </Avatar>
+            }}
+          >
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
+          </Avatar>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {user?.name || 'Customer'}
-              </Typography>
+            {user?.name || 'Customer'}
+          </Typography>
               <Typography variant="body2" color="text.secondary">
-                {user?.email || 'No email provided'}
-              </Typography>
-            </Box>
+            {user?.email || 'No email provided'}
+          </Typography>
+        </Box>
           </Box>
 
-          <TextField
+              <TextField
             label="Full Name"
-            fullWidth
+                fullWidth
             value={profileData.name}
             onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-          />
-          <TextField
-            label="Email"
+              />
+              <TextField
+                label="Email"
             fullWidth
             value={profileData.email}
             onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
@@ -1674,7 +1681,7 @@ const CustomerDashboard = () => {
                       emailUpdates: e.target.checked
                     }
                   }))}
-                />
+              />
               }
               label="Email Updates"
             />
@@ -1798,16 +1805,16 @@ const CustomerDashboard = () => {
         </Typography>
       </DialogTitle>
       <DialogContent>
-        <List>
-          {notifications.map((notification, index) => (
+          <List>
+            {notifications.map((notification, index) => (
             <ListItem key={index}>
-              <ListItemText
-                primary={notification.message}
-                secondary={notification.time}
-              />
-            </ListItem>
-          ))}
-        </List>
+                <ListItemText
+                  primary={notification.message}
+                  secondary={notification.time}
+                />
+              </ListItem>
+            ))}
+          </List>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setNotificationsDialogOpen(false)}>Close</Button>
@@ -1842,19 +1849,19 @@ const CustomerDashboard = () => {
                 <Typography variant="subtitle1">{address.street}</Typography>
                 <Typography variant="body2" color="text.secondary">
                   {address.city}, {address.state} - {address.zipCode}
-                </Typography>
+          </Typography>
               </CardContent>
             </Card>
           ))}
-          <Button
+              <Button
             startIcon={<Add />}
             onClick={() => {
               // Handle add new address
               setAddressDialogOpen(false);
-            }}
-          >
+                }}
+              >
             Add New Address
-          </Button>
+              </Button>
         </Box>
       </DialogContent>
       <DialogActions>
@@ -1875,19 +1882,19 @@ const CustomerDashboard = () => {
           bgcolor: 'background.paper',
           boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
         }
-      }}
-    >
+                }}
+              >
       <DialogTitle>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Shopping Cart
-        </Typography>
+                  </Typography>
       </DialogTitle>
       <DialogContent>
         {cart.items.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography variant="h6" color="text.secondary">
               Your cart is empty
-            </Typography>
+                </Typography>
           </Box>
         ) : (
           <List>
@@ -1906,7 +1913,7 @@ const CustomerDashboard = () => {
                   </IconButton>
                   <Typography>{item.quantity}</Typography>
                   <IconButton
-                    size="small"
+                      size="small"
                     onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                   >
                     <Add />
@@ -1920,15 +1927,15 @@ const CustomerDashboard = () => {
       <DialogActions>
         <Button onClick={() => setCartOpen(false)}>Close</Button>
         {cart.items.length > 0 && (
-          <Button
+                  <Button
             variant="contained"
             onClick={() => {
               setCartOpen(false);
               setCheckoutOpen(true);
             }}
-          >
+                  >
             Checkout
-          </Button>
+                  </Button>
         )}
       </DialogActions>
     </Dialog>
@@ -1971,7 +1978,7 @@ const CustomerDashboard = () => {
               label="Credit/Debit Card"
             />
           </RadioGroup>
-        </Box>
+                </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setCheckoutOpen(false)}>Cancel</Button>
@@ -2046,12 +2053,17 @@ const CustomerDashboard = () => {
           <IconButton
             color="inherit"
             edge="start"
-            onClick={() => setDrawerOpen(true)}
+            onClick={handleDrawerToggle}
             sx={{ 
               mr: { xs: 0.5, sm: 1 },
               color: 'white',
               display: { xs: 'flex', md: 'none' },
-              padding: { xs: '4px', sm: '8px' }
+              padding: { xs: '4px', sm: '8px' },
+              transition: 'transform 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.1)',
+                bgcolor: 'rgba(255,255,255,0.1)'
+              }
             }}
           >
             <Menu sx={{ fontSize: { xs: 24, sm: 28 } }} />
@@ -2066,69 +2078,69 @@ const CustomerDashboard = () => {
               fontSize: { xs: 20, sm: 24 }, 
               color: 'white'
             }} />
-            <Typography
+          <Typography
               variant="h5"
-              noWrap
-              component="div"
-              sx={{
+            noWrap
+            component="div"
+            sx={{
                 color: 'white',
                 fontWeight: 700,
                 letterSpacing: '1px',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
                 fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' }
-              }}
-            >
-              ZIPLY
-            </Typography>
+            }}
+          >
+            ZIPLY
+          </Typography>
           </Box>
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center',
             gap: { xs: 0.25, sm: 0.5 }
           }}>
-            <IconButton
-              color="inherit"
-              onClick={() => setCartOpen(true)}
+          <IconButton
+            color="inherit"
+            onClick={() => setCartOpen(true)}
               sx={{ 
                 color: 'white', 
                 padding: { xs: '4px', sm: '8px' }
               }}
-            >
-              <Badge badgeContent={cart.items.length} color="error">
+          >
+            <Badge badgeContent={cart.items.length} color="error">
                 <ShoppingCart sx={{ fontSize: { xs: 20, sm: 24 } }} />
-              </Badge>
-            </IconButton>
-            <IconButton
-              color="inherit"
-              onClick={() => setNotificationsDialogOpen(true)}
+            </Badge>
+          </IconButton>
+          <IconButton
+            color="inherit"
+            onClick={() => setNotificationsDialogOpen(true)}
               sx={{ 
                 color: 'white', 
                 padding: { xs: '4px', sm: '8px' }
               }}
-            >
-              <Badge badgeContent={notifications.length} color="error">
+          >
+            <Badge badgeContent={notifications.length} color="error">
                 <Notifications sx={{ fontSize: { xs: 20, sm: 24 } }} />
-              </Badge>
-            </IconButton>
+            </Badge>
+          </IconButton>
             <IconButton 
               onClick={() => setProfileDialog(true)}
               sx={{
                 padding: { xs: '4px', sm: '8px' }
               }}
             >
-              <Avatar
-                sx={{
+            <Avatar
+              sx={{
                   width: { xs: 24, sm: 28 },
                   height: { xs: 24, sm: 28 },
                   bgcolor: 'white',
                   color: '#FF0000',
-                  fontWeight: 600,
+                fontWeight: 600,
                   fontSize: { xs: '0.875rem', sm: '1rem' }
-                }}
-              >
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
-              </Avatar>
-            </IconButton>
+              }}
+            >
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
+            </Avatar>
+          </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
@@ -2137,14 +2149,14 @@ const CustomerDashboard = () => {
         variant="temporary"
         anchor="left"
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={handleDrawerToggle}
         sx={{
-          display: { xs: 'block', md: 'none' }, // Show only on mobile
+          display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': {
             width: { xs: '100%', sm: 320 },
             boxSizing: 'border-box',
             background: 'linear-gradient(180deg, rgb(191, 50, 50) 0%, #FF6B6B 100%)',
-            color: 'rgba(245, 67, 67, 0.8)',
+            color: 'white',
             borderRight: 'none',
             boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
             transition: 'transform 0.3s ease-in-out',
@@ -2159,6 +2171,13 @@ const CustomerDashboard = () => {
               pointerEvents: 'none'
             }
           },
+          '& .MuiBackdrop-root': {
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(4px)'
+          }
+        }}
+        ModalProps={{
+          keepMounted: true // Better mobile performance
         }}
       >
         <Box sx={{ 
@@ -2173,8 +2192,25 @@ const CustomerDashboard = () => {
             alignItems: 'center', 
             gap: 2,
             borderBottom: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(0,0,0,0.1)'
+            background: 'rgba(0,0,0,0.1)',
+            position: 'relative'
           }}>
+            <IconButton
+              onClick={handleDrawerToggle}
+              sx={{
+                position: 'absolute',
+                right: 16,
+                top: 16,
+                color: 'white',
+                '&:hover': {
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  transform: 'rotate(90deg)',
+                  transition: 'transform 0.3s ease'
+                }
+              }}
+            >
+              <Close />
+            </IconButton>
             <Avatar
               sx={{
                 width: 48,
@@ -2232,7 +2268,10 @@ const CustomerDashboard = () => {
                 >
                   <ListItem
                     button
-                    onClick={item.onClick}
+                    onClick={() => {
+                      item.onClick();
+                      handleDrawerToggle();
+                    }}
                     sx={{
                       borderRadius: '12px',
                       mb: 1,
@@ -2280,7 +2319,10 @@ const CustomerDashboard = () => {
           }}>
             <ListItem
               button
-              onClick={handleLogout}
+              onClick={() => {
+                handleLogout();
+                handleDrawerToggle();
+              }}
               sx={{
                 borderRadius: '12px',
                 transition: 'all 0.2s ease',
@@ -2509,7 +2551,7 @@ const CustomerDashboard = () => {
                 flexDirection: 'column', 
                 gap: { xs: 3, sm: 4, md: 5 }
               }}>
-                {renderCategories()}
+          {renderCategories()}
                 {renderProducts()}
               </Box>
             </Grid>
@@ -2519,11 +2561,11 @@ const CustomerDashboard = () => {
                 flexDirection: 'column', 
                 gap: { xs: 2, sm: 3, md: 4 }
               }}>
-                {renderStats()}
-                {renderLiveOrders()}
-                {renderTrendingProducts()}
-                {renderRecommendations()}
-              </Box>
+          {renderStats()}
+          {renderLiveOrders()}
+          {renderTrendingProducts()}
+          {renderRecommendations()}
+          </Box>
             </Grid>
           </Grid>
         </Container>
