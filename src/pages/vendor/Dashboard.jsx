@@ -125,6 +125,130 @@ import {
 const drawerWidth = 280;
 const collapsedDrawerWidth = 80;
 
+// Add these constants at the top with other constants
+const STOCK_UNITS = [
+  { value: 'piece', label: 'Piece' },
+  { value: 'kg', label: 'Kilogram' },
+  { value: 'g', label: 'Gram' },
+  { value: 'l', label: 'Litre' },
+  { value: 'ml', label: 'Millilitre' },
+  { value: 'box', label: 'Box' },
+  { value: 'pack', label: 'Pack' }
+];
+
+// Add these reusable components at the top of the file after imports
+const StatusChip = ({ status }) => {
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'delivered': return 'success';
+      case 'processing': return 'warning';
+      case 'pending': return 'info';
+      case 'cancelled': return 'error';
+      case 'shipped': return 'primary';
+      default: return 'default';
+    }
+  };
+
+  return (
+    <Chip
+      label={status?.toUpperCase() || 'N/A'}
+      color={getStatusColor(status)}
+      size="small"
+    />
+  );
+};
+
+const ResponsiveTable = ({ children, minWidth = 600 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  if (isMobile) {
+    return (
+      <Box sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <Box sx={{ minWidth }}>
+          {children}
+        </Box>
+      </Box>
+    );
+  }
+
+  return children;
+};
+
+const StatCard = ({ title, value, icon, change, color, image }) => (
+  <motion.div
+    variants={fadeInUp}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+  >
+    <Card sx={{ 
+      height: { xs: 180, sm: 200 },
+      position: 'relative',
+      overflow: 'hidden',
+      borderRadius: 2,
+      boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+    }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `url(${image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.1
+        }}
+      />
+      <CardContent sx={{ 
+        position: 'relative',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
+      }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+            {title}
+          </Typography>
+          <Box sx={{ 
+            p: 1, 
+            borderRadius: 2,
+            bgcolor: `${color}15`,
+            color: color
+          }}>
+            {icon}
+          </Box>
+        </Box>
+        <Box>
+          <Typography variant="h4" sx={{ 
+            mb: 1, 
+            fontWeight: 'bold',
+            fontSize: { xs: '1.5rem', sm: '2rem' }
+          }}>
+            {value}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {change.startsWith('+') ? (
+              <TrendingUpIcon color="success" fontSize="small" />
+            ) : (
+              <TrendingDownIcon color="error" fontSize="small" />
+            )}
+            <Typography 
+              variant="body2" 
+              color={change.startsWith('+') ? 'success.main' : 'error.main'}
+              sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+            >
+              {change} from last month
+            </Typography>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  </motion.div>
+);
+
 function VendorDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -143,6 +267,7 @@ function VendorDashboard() {
     price: '',
     category: '',
     stock: '',
+    stockUnit: 'piece', // Add this line
     image: null,
     images: [],
   });
@@ -456,6 +581,7 @@ function VendorDashboard() {
         price: product.price,
         category: product.category,
         stock: product.stock,
+        stockUnit: product.stockUnit,
         image: product.image,
         images: product.images || [],
       });
@@ -468,6 +594,7 @@ function VendorDashboard() {
         price: '',
         category: '',
         stock: '',
+        stockUnit: 'piece',
         image: null,
         images: [],
       });
@@ -485,6 +612,7 @@ function VendorDashboard() {
       price: '',
       category: '',
       stock: '',
+      stockUnit: 'piece',
       image: null,
       images: [],
     });
@@ -546,6 +674,7 @@ function VendorDashboard() {
         price: parseFloat(formData.price),
         category: formData.category.trim(),
         stock: parseInt(formData.stock),
+        stockUnit: formData.stockUnit,
         images: imageFiles, // Pass the image files directly
         isAvailable: true,
         preparationTime: 15 // Default preparation time
@@ -571,6 +700,7 @@ function VendorDashboard() {
         price: '',
         category: '',
         stock: '',
+        stockUnit: 'piece',
         images: []
       });
       setImageFiles([]);
@@ -881,6 +1011,7 @@ function VendorDashboard() {
     </Box>
   );
 
+  // Update the renderContent function to use these components
   const renderContent = () => {
     if (isInitialLoading) {
       return <LoadingSkeleton />;
@@ -898,8 +1029,8 @@ function VendorDashboard() {
             <Box
               sx={{
                 position: 'relative',
-                height: '300px',
-                mb: 4,
+                height: { xs: '200px', sm: '250px', md: '300px' },
+                mb: { xs: 2, sm: 3, md: 4 },
                 borderRadius: 2,
                 overflow: 'hidden',
                 background: 'linear-gradient(45deg, #FF6B6B 30%, #4ECDC4 90%)',
@@ -954,12 +1085,12 @@ function VendorDashboard() {
             </Box>
 
             {/* Stats Cards Row 1 */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
               {[
                 {
                   title: 'Total Orders',
                   value: dashboardStats.totalOrders,
-                  icon: <CartIcon sx={{ fontSize: 40 }} />,
+                  icon: <CartIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />,
                   change: '+12%',
                   color: '#1b5e20',
                   image: '/images/orders-bg.jpg'
@@ -967,7 +1098,7 @@ function VendorDashboard() {
                 {
                   title: 'Shipped Orders',
                   value: dashboardStats.shippedOrders,
-                  icon: <ShippingIcon sx={{ fontSize: 40 }} />,
+                  icon: <ShippingIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />,
                   change: '+8%',
                   color: '#1976d2',
                   image: '/images/shipping-bg.jpg'
@@ -975,7 +1106,7 @@ function VendorDashboard() {
                 {
                   title: 'Pending Orders',
                   value: dashboardStats.pendingOrders,
-                  icon: <WarningIcon sx={{ fontSize: 40 }} />,
+                  icon: <WarningIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />,
                   change: '-3%',
                   color: '#f57c00',
                   image: '/images/pending-bg.jpg'
@@ -983,179 +1114,104 @@ function VendorDashboard() {
                 {
                   title: 'Total Revenue',
                   value: formatCurrency(dashboardStats.totalRevenue),
-                  icon: <MoneyIcon sx={{ fontSize: 40 }} />,
+                  icon: <MoneyIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />,
                   change: '+15%',
                   color: '#9c27b0',
                   image: '/images/revenue-bg.jpg'
                 }
               ].map((stat, index) => (
                 <Grid item xs={12} sm={6} md={3} key={index}>
-                  <motion.div
-                    variants={fadeInUp}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Card sx={{ 
-                      height: 200,
-                      position: 'relative',
-                      overflow: 'hidden',
-                      borderRadius: 2,
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                    }}>
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background: `url(${stat.image})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          opacity: 0.1
-                        }}
-                      />
-                      <CardContent sx={{ 
-                        position: 'relative',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between'
-                      }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <Typography variant="h6" color="text.secondary">
-                            {stat.title}
-                          </Typography>
-                          <Box sx={{ 
-                            p: 1, 
-                            borderRadius: 2,
-                            bgcolor: `${stat.color}15`,
-                            color: stat.color
-                          }}>
-                            {stat.icon}
-                          </Box>
-                        </Box>
-                        <Box>
-                          <Typography variant="h4" sx={{ mb: 1, fontWeight: 'bold' }}>
-                            {stat.value}
-                          </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            {stat.change.startsWith('+') ? (
-                              <TrendingUpIcon color="success" fontSize="small" />
-                            ) : (
-                              <TrendingDownIcon color="error" fontSize="small" />
-                            )}
-                            <Typography 
-                              variant="body2" 
-                              color={stat.change.startsWith('+') ? 'success.main' : 'error.main'}
-                            >
-                              {stat.change} from last month
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                  <StatCard {...stat} />
                 </Grid>
               ))}
             </Grid>
 
             {/* Recent Orders and Top Products */}
-            <Grid container spacing={3}>
+            <Grid container spacing={{ xs: 2, sm: 3 }}>
               <Grid item xs={12} md={8}>
-                <motion.div
-                  variants={fadeInUp}
-                  whileHover={{ scale: 1.01 }}
-                >
-                  <Card sx={{ 
-                    borderRadius: 2,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                  }}>
+                <motion.div variants={fadeInUp} whileHover={{ scale: 1.01 }}>
+                  <Card sx={{ borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                        <Typography variant="h6">Recent Orders</Typography>
+                        <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                          Recent Orders
+                        </Typography>
                         <Button 
                           color="primary"
                           endIcon={<ArrowForwardIcon />}
                           onClick={() => handleNavigation('orders')}
+                          size={isMobile ? "small" : "medium"}
                         >
                           View All
                         </Button>
                       </Box>
-                      <TableContainer>
-                        <Table>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Order ID</TableCell>
-                              <TableCell>Customer</TableCell>
-                              <TableCell>Delivery Address</TableCell>
-                              <TableCell>Payment Method</TableCell>
-                              <TableCell>Amount</TableCell>
-                              <TableCell>Status</TableCell>
-                              <TableCell>Action</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {dashboardStats.recentOrders.map((order) => (
-                              <motion.tr
-                                key={order._id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.3 }}
-                              >
-                                <TableCell>#{order._id}</TableCell>
-                                <TableCell>
-                                  <Box>
-                                    <Typography variant="body2">{order.customer?.name || 'N/A'}</Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                      {order.customer?.phone || 'N/A'}
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Box>
-                                    <Typography variant="body2">
-                                      {order.deliveryAddress?.street || 'N/A'}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                      {order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.zipCode}
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Chip
-                                    label={order.paymentMethod?.toUpperCase() || 'N/A'}
-                                    color={order.paymentMethod === 'card' ? 'primary' : 'default'}
-                                    size="small"
-                                  />
-                                </TableCell>
-                                <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
-                                <TableCell>
-                                  <Chip
-                                    label={order.status}
-                                    color={
-                                      order.status === 'delivered' ? 'success' :
-                                      order.status === 'pending' ? 'warning' :
-                                      order.status === 'cancelled' ? 'error' :
-                                      'default'
-                                    }
-                                    size="small"
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    size="small"
-                                    color="primary"
-                                    onClick={() => handleNavigation(`orders/${order._id}`)}
-                                  >
-                                    View
-                                  </Button>
-                                </TableCell>
-                              </motion.tr>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
+                      <ResponsiveTable>
+                        <TableContainer>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Order ID</TableCell>
+                                <TableCell>Customer</TableCell>
+                                <TableCell>Delivery Address</TableCell>
+                                <TableCell>Payment Method</TableCell>
+                                <TableCell>Amount</TableCell>
+                                <TableCell>Status</TableCell>
+                                <TableCell>Action</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {dashboardStats.recentOrders.map((order) => (
+                                <motion.tr
+                                  key={order._id}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                >
+                                  <TableCell>#{order._id}</TableCell>
+                                  <TableCell>
+                                    <Box>
+                                      <Typography variant="body2">{order.customer?.name || 'N/A'}</Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {order.customer?.phone || 'N/A'}
+                                      </Typography>
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Box>
+                                      <Typography variant="body2">
+                                        {order.deliveryAddress?.street || 'N/A'}
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.zipCode}
+                                      </Typography>
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={order.paymentMethod?.toUpperCase() || 'N/A'}
+                                      color={order.paymentMethod === 'card' ? 'primary' : 'default'}
+                                      size="small"
+                                    />
+                                  </TableCell>
+                                  <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
+                                  <TableCell>
+                                    <StatusChip status={order.status} />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      size="small"
+                                      color="primary"
+                                      onClick={() => handleNavigation(`orders/${order._id}`)}
+                                    >
+                                      View
+                                    </Button>
+                                  </TableCell>
+                                </motion.tr>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </ResponsiveTable>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -1265,7 +1321,7 @@ function VendorDashboard() {
                         <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell>
                           <Chip
-                            label={product.stock}
+                            label={`${product.stock} ${product.stockUnit}`}
                             color={product.stock < 10 ? 'error' : 'success'}
                             size="small"
                           />
@@ -1536,16 +1592,7 @@ function VendorDashboard() {
                         <TableCell>{order.items?.length || 0} items</TableCell>
                         <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
                         <TableCell>
-                          <Chip
-                            label={order.status?.toUpperCase() || 'N/A'}
-                            color={
-                              order.status === 'delivered' ? 'success' :
-                              order.status === 'processing' ? 'warning' :
-                              order.status === 'cancelled' ? 'error' :
-                              'default'
-                            }
-                            size="small"
-                          />
+                          <StatusChip status={order.status} />
                         </TableCell>
                         <TableCell>
                           <Chip
@@ -1731,15 +1778,31 @@ function VendorDashboard() {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Stock"
-                type="number"
-                value={formData.stock}
-                onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
-                required
-                sx={{ mb: 2 }}
-              />
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
+                  required
+                  sx={{ mb: 2 }}
+                />
+                <FormControl sx={{ minWidth: 120, mb: 2 }}>
+                  <InputLabel>Unit</InputLabel>
+                  <Select
+                    value={formData.stockUnit}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stockUnit: e.target.value }))}
+                    label="Unit"
+                  >
+                    {STOCK_UNITS.map((unit) => (
+                      <MenuItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth sx={{ mb: 2 }}>
@@ -1883,6 +1946,7 @@ function VendorDashboard() {
     setCustomerDetailsOpen(true);
   };
 
+  // Update the renderOrderDetails function to use StatusChip
   const renderOrderDetails = () => (
     <Dialog
       open={orderDetailsOpen}
@@ -1893,6 +1957,8 @@ function VendorDashboard() {
         sx: {
           borderRadius: '16px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          maxHeight: { xs: '90vh', sm: '80vh' },
+          m: { xs: 2, sm: 3 }
         }
       }}
     >
@@ -1973,17 +2039,7 @@ function VendorDashboard() {
                     </Typography>
                     <Typography variant="body2">
                       <strong>Order Status:</strong>
-                      <Chip
-                        label={selectedOrder.status?.toUpperCase() || 'N/A'}
-                        color={
-                          selectedOrder.status === 'delivered' ? 'success' :
-                          selectedOrder.status === 'processing' ? 'warning' :
-                          selectedOrder.status === 'cancelled' ? 'error' :
-                          'default'
-                        }
-                        size="small"
-                        sx={{ ml: 1 }}
-                      />
+                      <StatusChip status={selectedOrder.status} />
                     </Typography>
                   </Box>
                 </CardContent>
@@ -2040,18 +2096,40 @@ function VendorDashboard() {
         >
           Close
         </Button>
+        {selectedOrder?.status === 'pending' && (
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'processing')}
+              sx={{ mr: 1 }}
+            >
+              Mark as Processing
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'cancelled')}
+              sx={{ mr: 1 }}
+            >
+              Cancel Order
+            </Button>
+          </>
+        )}
         {selectedOrder?.status === 'processing' && (
-        <Button
-          variant="contained"
+          <Button
+            variant="contained"
             color="success"
-            onClick={() => {
-              // Handle order status update
-              setOrderDetailsOpen(false);
-            }}
-            sx={{
-              bgcolor: '#4ECDC4',
-              '&:hover': { bgcolor: '#45b7af' }
-            }}
+            onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'shipped')}
+          >
+            Mark as Shipped
+          </Button>
+        )}
+        {selectedOrder?.status === 'shipped' && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => handleOrderStatusUpdate(selectedOrder._id, 'delivered')}
           >
             Mark as Delivered
           </Button>
@@ -2177,16 +2255,7 @@ function VendorDashboard() {
                               <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                               <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
                               <TableCell>
-                                <Chip
-                                  label={order.status?.toUpperCase() || 'N/A'}
-                                  color={
-                                    order.status === 'delivered' ? 'success' :
-                                    order.status === 'processing' ? 'warning' :
-                                    order.status === 'cancelled' ? 'error' :
-                                    'default'
-                                  }
-                                  size="small"
-                                />
+                                <StatusChip status={order.status} />
                               </TableCell>
                               <TableCell>
                                 <Button
@@ -2430,6 +2499,19 @@ function VendorDashboard() {
       </Grid>
     </Box>
   );
+
+  // Add this function to handle order status updates
+  const handleOrderStatusUpdate = async (orderId, newStatus) => {
+    try {
+      await orderAPI.updateOrderStatus(orderId, newStatus);
+      showSnackbar(`Order status updated to ${newStatus}`, 'success');
+      fetchOrders(); // Refresh orders list
+      setOrderDetailsOpen(false);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      showSnackbar('Error updating order status', 'error');
+    }
+  };
 
   return (
     <Box sx={{ 
