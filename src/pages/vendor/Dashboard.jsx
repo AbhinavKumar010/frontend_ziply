@@ -526,6 +526,8 @@ function VendorDashboard() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerDetailsOpen, setCustomerDetailsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Add a new state to track which images are URLs (existing) and which are new files
+  const [existingImages, setExistingImages] = useState([]);
 
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -713,6 +715,9 @@ function VendorDashboard() {
         image: product.image,
         images: product.images || [],
       });
+      // Separate existing image URLs from new uploads
+      setExistingImages(product.images || []);
+      setImageFiles([]); // No new files yet
       setPreviewUrls(product.images || []);
     } else {
       setSelectedProduct(null);
@@ -726,6 +731,8 @@ function VendorDashboard() {
         image: null,
         images: [],
       });
+      setExistingImages([]);
+      setImageFiles([]);
       setPreviewUrls([]);
     }
     setOpenDialog(true);
@@ -752,26 +759,24 @@ function VendorDashboard() {
     const files = Array.from(event.target.files);
     if (files.length > 0) {
       setImageFiles(prev => [...prev, ...files]);
-      
       // Create preview URLs for the new images
       const newPreviewUrls = files.map(file => URL.createObjectURL(file));
       setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
-      
-      // Update formData with the new image URLs
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...newPreviewUrls]
-      }));
+      // No need to update formData.images here; previewUrls is used for display
     }
   };
 
   const handleRemoveImage = (index) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+    // If the image is from existingImages, remove from there
+    if (index < existingImages.length) {
+      setExistingImages(prev => prev.filter((_, i) => i !== index));
+      setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+    } else {
+      // Remove from new uploads
+      const fileIndex = index - existingImages.length;
+      setImageFiles(prev => prev.filter((_, i) => i !== fileIndex));
+      setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -782,19 +787,16 @@ function VendorDashboard() {
         showSnackbar('Please fill in all required fields', 'error');
         return;
       }
-
       // Validate price and stock are positive numbers
       if (parseFloat(formData.price) <= 0 || parseInt(formData.stock) < 0) {
         showSnackbar('Price must be greater than 0 and stock must be non-negative', 'error');
         return;
       }
-
-      // Validate at least one image is uploaded
-      if (imageFiles.length === 0) {
+      // Validate at least one image (existing or new)
+      if (existingImages.length + imageFiles.length === 0) {
         showSnackbar('Please upload at least one product image', 'error');
         return;
       }
-
       // Prepare product data
       const productData = {
         name: formData.name.trim(),
@@ -803,24 +805,24 @@ function VendorDashboard() {
         category: formData.category.trim(),
         stock: parseInt(formData.stock),
         stockUnit: formData.stockUnit,
-        images: imageFiles, // Pass the image files directly
+        images: existingImages, // URLs of existing images
         isAvailable: true,
         preparationTime: 15 // Default preparation time
       };
-
-      console.log('Submitting product data:', productData);
-
+      // If there are new files, append them as well
+      if (imageFiles.length > 0) {
+        productData.newImages = imageFiles; // Backend should handle this field
+      }
       let response;
       if (selectedProduct) {
         response = await productAPI.updateProduct(selectedProduct._id, productData);
         showSnackbar('Product updated successfully', 'success');
       } else {
+        // For new product, combine all images (files only)
+        productData.images = imageFiles;
         response = await productAPI.createProduct(productData);
         showSnackbar('Product added successfully', 'success');
       }
-
-      console.log('Server response:', response);
-
       // Clear form and close dialog
       setFormData({
         name: '',
@@ -832,6 +834,8 @@ function VendorDashboard() {
         images: []
       });
       setImageFiles([]);
+      setExistingImages([]);
+      setPreviewUrls([]);
       handleCloseDialog();
       loadProducts();
     } catch (error) {
@@ -1656,61 +1660,106 @@ function VendorDashboard() {
                   </Button>
                 </Box>
               </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Order ID</TableCell>
-                      <TableCell>Customer</TableCell>
-                      <TableCell>Items</TableCell>
-                      <TableCell>Total Amount</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Payment</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {orders.map((order) => (
-                      <TableRow key={order._id}>
-                        <TableCell>#{order._id}</TableCell>
-                        <TableCell>
-                          <Box>
-                            <Typography variant="body2">{order.customer?.name || 'N/A'}</Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {order.customer?.phone || 'N/A'}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>{order.items?.length || 0} items</TableCell>
-                        <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
-                        <TableCell>
-                          <StatusChip status={order.status} />
-                        </TableCell>
-                        <TableCell>
+              {isMobile ? (
+                // MOBILE: Render orders as cards
+                <Box>
+                  {orders.map((order) => (
+                    <Card key={order._id} sx={{ mb: 2, boxShadow: 2 }}>
+                      <CardContent>
+                        <Typography variant="subtitle1" fontWeight={600}>
+                          Order #{order._id}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Customer:</strong> {order.customer?.name || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Items:</strong> {order.items?.length || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Total:</strong> ₹{order.totalAmount?.toFixed(2) || '0.00'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Status:</strong> <StatusChip status={order.status} />
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Payment:</strong>
                           <Chip
                             label={order.paymentStatus?.toUpperCase() || 'N/A'}
                             color={order.paymentStatus === 'paid' ? 'success' : 'warning'}
                             size="small"
+                            sx={{ ml: 1 }}
                           />
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            onClick={() => handleViewOrder(order)}
-                            sx={{
-                              bgcolor: '#FF6B6B',
-                              '&:hover': { bgcolor: '#FF5252' }
-                            }}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
+                        </Typography>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          onClick={() => handleViewOrder(order)}
+                          sx={{ mt: 1, bgcolor: '#FF6B6B', '&:hover': { bgcolor: '#FF5252' } }}
+                        >
+                          View
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Box>
+              ) : (
+                // DESKTOP: Render table as before
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Order ID</TableCell>
+                        <TableCell>Customer</TableCell>
+                        <TableCell>Items</TableCell>
+                        <TableCell>Total Amount</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Payment</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {orders.map((order) => (
+                        <TableRow key={order._id}>
+                          <TableCell>#{order._id}</TableCell>
+                          <TableCell>
+                            <Box>
+                              <Typography variant="body2">{order.customer?.name || 'N/A'}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {order.customer?.phone || 'N/A'}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>{order.items?.length || 0} items</TableCell>
+                          <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                          <TableCell>
+                            <StatusChip status={order.status} />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={order.paymentStatus?.toUpperCase() || 'N/A'}
+                              color={order.paymentStatus === 'paid' ? 'success' : 'warning'}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={() => handleViewOrder(order)}
+                              sx={{
+                                bgcolor: '#FF6B6B',
+                                '&:hover': { bgcolor: '#FF5252' }
+                              }}
+                            >
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
             </CardContent>
           </Card>
         );
@@ -2233,16 +2282,18 @@ function VendorDashboard() {
       onClose={() => setCustomerDetailsOpen(false)}
       maxWidth="md"
       fullWidth
+      fullScreen={isMobile}
       PaperProps={{
         sx: {
-          borderRadius: '16px',
+          borderRadius: isMobile ? 0 : '16px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          m: isMobile ? 0 : 2,
         }
       }}
     >
-      <DialogTitle sx={{ bgcolor: '#FF0000', color: 'white' }}>
+      <DialogTitle sx={{ bgcolor: '#FF0000', color: 'white', px: isMobile ? 2 : 4, py: isMobile ? 2 : 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          <Typography variant={isMobile ? 'h6' : 'h6'} sx={{ fontWeight: 600, fontSize: isMobile ? '1.1rem' : '1.25rem' }}>
             Customer Details
           </Typography>
           <IconButton onClick={() => setCustomerDetailsOpen(false)} sx={{ color: 'white' }}>
@@ -2250,48 +2301,56 @@ function VendorDashboard() {
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent
+        sx={{
+          px: isMobile ? 1 : 4,
+          py: isMobile ? 1 : 3,
+          bgcolor: isMobile ? 'background.default' : 'inherit',
+          maxHeight: isMobile ? 'calc(100vh - 120px)' : '70vh',
+          overflowY: 'auto',
+        }}
+      >
         {selectedCustomer && (
-          <Grid container spacing={3} sx={{ mt: 1 }}>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ mb: 2 }}>
+          <Grid container spacing={isMobile ? 2 : 3} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={12} md={6}>
+              <Card sx={{ mb: isMobile ? 2 : 2, p: isMobile ? 1 : 2 }}>
                 <CardContent>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, fontSize: isMobile ? '1rem' : '1.1rem' }}>
                     Customer Information
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                       <strong>Name:</strong> {selectedCustomer.name || 'N/A'}
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                       <strong>Email:</strong> {selectedCustomer.email || 'N/A'}
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                       <strong>Phone:</strong> {selectedCustomer.phone || 'N/A'}
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                       <strong>Customer ID:</strong> {selectedCustomer._id}
                     </Typography>
                   </Box>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card sx={{ p: isMobile ? 1 : 2 }}>
                 <CardContent>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, fontSize: isMobile ? '1rem' : '1.1rem' }}>
                     Order Statistics
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                       <strong>Total Orders:</strong> {orders.filter(order => order.customer?._id === selectedCustomer._id).length}
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                       <strong>Total Spent:</strong> ₹{orders
                         .filter(order => order.customer?._id === selectedCustomer._id)
                         .reduce((sum, order) => sum + (order.totalAmount || 0), 0)
                         .toFixed(2)}
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                       <strong>First Order:</strong> {orders
                         .filter(order => order.customer?._id === selectedCustomer._id)
                         .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))[0]?.createdAt
@@ -2301,7 +2360,7 @@ function VendorDashboard() {
                             .toLocaleDateString()
                         : 'N/A'}
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                       <strong>Last Order:</strong> {orders
                         .filter(order => order.customer?._id === selectedCustomer._id)
                         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]?.createdAt
@@ -2316,21 +2375,21 @@ function VendorDashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Card>
+            <Grid item xs={12} sm={12} md={6}>
+              <Card sx={{ p: isMobile ? 1 : 2 }}>
                 <CardContent>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, fontSize: isMobile ? '1rem' : '1.1rem' }}>
                     Recent Orders
                   </Typography>
                   <TableContainer>
                     <Table size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell>Order ID</TableCell>
-                          <TableCell>Date</TableCell>
-                          <TableCell>Amount</TableCell>
-                          <TableCell>Status</TableCell>
-                          <TableCell>Action</TableCell>
+                          <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>Order ID</TableCell>
+                          <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>Date</TableCell>
+                          <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>Amount</TableCell>
+                          <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>Status</TableCell>
+                          <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>Action</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -2340,13 +2399,13 @@ function VendorDashboard() {
                           .slice(0, 5)
                           .map((order) => (
                             <TableRow key={order._id}>
-                              <TableCell>#{order._id}</TableCell>
-                              <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                              <TableCell>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
-                              <TableCell>
+                              <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>#{order._id}</TableCell>
+                              <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>₹{order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                              <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                                 <StatusChip status={order.status} />
                               </TableCell>
-                              <TableCell>
+                              <TableCell sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
                                 <Button
                                   size="small"
                                   onClick={() => {
@@ -2354,6 +2413,7 @@ function VendorDashboard() {
                                     setSelectedOrder(order);
                                     setOrderDetailsOpen(true);
                                   }}
+                                  sx={{ minWidth: isMobile ? 32 : 64, fontSize: isMobile ? '0.95rem' : '1rem', p: isMobile ? 0.5 : 1 }}
                                 >
                                   View
                                 </Button>
@@ -2369,11 +2429,23 @@ function VendorDashboard() {
           </Grid>
         )}
       </DialogContent>
-      <DialogActions sx={{ p: 3 }}>
+      <DialogActions
+        sx={{
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'center',
+          gap: isMobile ? 1 : 2,
+          px: isMobile ? 2 : 4,
+          py: isMobile ? 2 : 3,
+        }}
+      >
         <Button
           variant="outlined"
           onClick={() => setCustomerDetailsOpen(false)}
-          sx={{ mr: 1 }}
+          sx={{
+            width: isMobile ? '100%' : 'auto',
+            fontSize: isMobile ? '1rem' : '1rem',
+            borderRadius: 2
+          }}
         >
           Close
         </Button>

@@ -38,14 +38,7 @@ import {
   TableBody,
   TableCell,
   TableRow,
-  CardActions,
   Switch,
-  Tabs,
-  Tab,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   FormGroup,
 } from '@mui/material';
 import { useState, useEffect, useRef } from 'react';
@@ -68,30 +61,15 @@ import {
   Star,
   LocalShipping,
   AttachMoney,
-  People,
-  Inventory,
-  Category,
-  FilterList,
-  Sort,
+  
   LocationOn,
-  Store,
-  LocalOffer,
-  Timer,
-  MyLocation,
   CheckCircle,
-  Info,
-  Payment,
-  ViewList,
-  GridView,
-  TrendingUp,
-  CreditCard,
-  Money,
-  CheckCircleOutline,
+  
   ShoppingBag,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { productAPI, orderAPI, socketService } from '../../services/api';
+import { productAPI, orderAPI, socketService, userAPI } from '../../services/api';
 import { addToCart } from '../../store/slices/cartSlice';
 import { logout } from '../../store/slices/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -99,6 +77,7 @@ import { useInView } from 'react-intersection-observer';
 import { formatDistanceToNow } from 'date-fns';
 import { alpha } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
+import RazorpayPayment from './RazorpayPayment';
 
 // Define button styles
 const buttonStyles = {
@@ -452,7 +431,6 @@ const CustomerDashboard = () => {
   });
   const [profileDialog, setProfileDialog] = useState(false);
   const [liveOrders, setLiveOrders] = useState([]);
-  const [trendingProducts, setTrendingProducts] = useState([]);
   const [searchHistory, setSearchHistory] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -467,6 +445,9 @@ const CustomerDashboard = () => {
     email: '',
     phone: '',
     address: '',
+    city: '',
+    state: '',
+    zipCode: '',
     preferences: {
       notifications: true,
       emailUpdates: true,
@@ -483,6 +464,9 @@ const CustomerDashboard = () => {
   // Add new state for order details dialog
   const [orderDetailsDialogOpen, setOrderDetailsDialogOpen] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
+
+  // Add state for address confirmation dialog
+  const [addressConfirmOpen, setAddressConfirmOpen] = useState(false);
 
   // Update useEffect to initialize filtered products
   useEffect(() => {
@@ -505,7 +489,6 @@ const CustomerDashboard = () => {
         await Promise.all([
           fetchProducts(),
           fetchLiveOrders(),
-          fetchTrendingProducts(),
           fetchRecommendations()
         ]);
 
@@ -540,6 +523,43 @@ const CustomerDashboard = () => {
     }
   }, []);
 
+  // Fetch orders and stats from backend
+  const fetchOrders = async () => {
+    try {
+      const response = await orderAPI.getOrders();
+      if (response?.data) setOrders(response.data);
+    } catch (error) {
+      showSnackbar('Failed to fetch orders', 'error');
+    }
+  };
+  const fetchStats = async () => {
+    try {
+      const response = await orderAPI.getStats();
+      if (response?.data) setStats(response.data);
+    } catch (error) {
+      showSnackbar('Failed to fetch stats', 'error');
+    }
+  };
+
+  // On dashboard load and after order placed, fetch orders and stats
+  useEffect(() => {
+    fetchOrders();
+    fetchStats();
+  }, []);
+
+  // After order placed
+  const handleOrderPlaced = () => {
+    setOrderSuccessOpen(true);
+    fetchOrders();
+    fetchStats();
+    setTimeout(() => {
+      if (orders && orders.length > 0) {
+        setSelectedOrderDetails(orders[0]); // Assuming latest order is first
+        setOrderDetailsDialogOpen(true);
+      }
+    }, 500); // Wait a bit for fetchOrders to complete
+  };
+
   const fetchProducts = async () => {
     try {
       const response = await productAPI.getAllProducts();
@@ -567,12 +587,12 @@ const CustomerDashboard = () => {
 
         socketService.connect();
         
-        socketService.socket.on('connect', () => {
+        socketService.socket.addEventListener('open', () => {
           clearTimeout(timeout);
           resolve();
         });
 
-        socketService.socket.on('connect_error', (error) => {
+        socketService.socket.addEventListener('error', (error) => {
           clearTimeout(timeout);
           reject(error);
         });
@@ -639,18 +659,6 @@ const CustomerDashboard = () => {
     }
   };
 
-  const fetchTrendingProducts = async () => {
-    try {
-      const response = await productAPI.getAllProducts(); // Temporarily use getAllProducts
-      if (response?.data) {
-        setTrendingProducts(response.data.slice(0, 4)); // Show first 4 products as trending
-      }
-    } catch (error) {
-      console.error('Error fetching trending products:', error);
-      showSnackbar('Failed to fetch trending products', 'error');
-    }
-  };
-
   const fetchRecommendations = async () => {
     try {
       const response = await productAPI.getAllProducts(); // Temporarily use getAllProducts
@@ -666,19 +674,6 @@ const CustomerDashboard = () => {
   // Enhanced search functionality
   const handleSearch = (query) => {
     setSearchQuery(query);
-    if (query.trim()) {
-      const filtered = products.filter(product => 
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.description.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredProducts(filtered);
-      setSearchHistory(prev => {
-        const newHistory = [query, ...prev.filter(item => item !== query)].slice(0, 5);
-        return newHistory;
-      });
-    } else {
-      setFilteredProducts(products);
-    }
   };
 
   const handleFilterChange = (newFilters) => {
@@ -1021,36 +1016,44 @@ const CustomerDashboard = () => {
                 fullWidth
                 placeholder="Search products..."
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchAction();
+                  }
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                  <Search />
+                      <Search
+                        sx={{ cursor: 'pointer' }}
+                        onClick={handleSearchAction}
+                      />
                     </InputAdornment>
                   ),
-              endAdornment: searchQuery && (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setFilteredProducts(products);
-                    }}
-                  >
-                    <Close fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
+                  endAdornment: searchQuery && (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setFilteredProducts(products);
+                        }}
+                      >
+                        <Close fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
                 sx={{
-              '& .MuiOutlinedInput-root': {
-                ...glassCard,
-                '&:hover': {
-                  ...glowingBorder
-                }
-              }
-            }}
-          />
+                  '& .MuiOutlinedInput-root': {
+                    ...glassCard,
+                    '&:hover': {
+                      ...glowingBorder
+                    }
+                  }
+                }}
+              />
           {searchQuery && searchHistory.length > 0 && (
             <Paper
               sx={{
@@ -1079,6 +1082,11 @@ const CustomerDashboard = () => {
                 ))}
               </List>
             </Paper>
+          )}
+          {searchQuery && filteredProducts.length === 0 && (
+            <Typography color="error" sx={{ mt: 1, textAlign: 'center' }}>
+              Product not available
+            </Typography>
           )}
               </Box>
             </motion.div>
@@ -1186,7 +1194,7 @@ const CustomerDashboard = () => {
         </Box>
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           {filteredProducts.map((product, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={product._id} data-product-id={product._id}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1206,7 +1214,7 @@ const CustomerDashboard = () => {
                 >
                   <CardMedia
                     component="img"
-                    height="200"
+                    height="120"
                     image={product.image}
                     alt={product.name}
                   sx={{
@@ -1461,106 +1469,6 @@ const CustomerDashboard = () => {
     </motion.div>
   );
 
-  const renderTrendingProducts = () => (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={staggerContainer}
-    >
-      <Container maxWidth="lg">
-        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 700,
-              color: 'text.primary',
-              textAlign: { xs: 'center', sm: 'left' }
-            }}
-          >
-            Trending Products
-        </Typography>
-        </Box>
-        <Grid container spacing={{ xs: 2, sm: 3 }}>
-          {trendingProducts.map((product, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-              >
-                <Card
-                  sx={{
-                    ...glassCard,
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    '&:hover': {
-                      ...glowingBorder
-                    }
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={product.image}
-                    alt={product.name}
-                    sx={{
-                      objectFit: 'cover',
-                      borderBottom: '1px solid',
-                      borderColor: 'divider'
-                    }}
-                  />
-                  <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-            fontWeight: 600,
-                        mb: 1,
-                        fontSize: { xs: '1rem', sm: '1.125rem' }
-                      }}
-                    >
-                      {product.name}
-          </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2, flexGrow: 1 }}
-                    >
-                      {product.description}
-            </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: 'primary.main',
-                          fontWeight: 700
-                        }}
-                      >
-                        ₹{product.price}
-            </Typography>
-          <Button
-            variant="contained"
-                        onClick={() => handleAddToCart(product)}
-            sx={{
-              ...buttonStyles,
-                          minWidth: 'auto',
-                          px: 2
-            }}
-          >
-                        Add to Cart
-          </Button>
-        </Box>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-    </motion.div>
-  );
-
   const renderRecommendations = () => (
     <motion.div
       initial="hidden"
@@ -1602,7 +1510,7 @@ const CustomerDashboard = () => {
                 >
                   <CardMedia
                     component="img"
-                    height="200"
+                    height="120"
                     image={product.image}
                     alt={product.name}
                     sx={{
@@ -1725,6 +1633,20 @@ const CustomerDashboard = () => {
             value={profileData.phone}
             onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
           />
+          <TextField
+            label="Address"
+            fullWidth
+            value={profileData.address}
+            onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+            sx={{ mt: 2 }}
+          />
+          <Button
+            variant="outlined"
+            onClick={handleAutoDetectLocation}
+            sx={{ mt: 1 }}
+          >
+            Auto-detect Location
+          </Button>
 
           <FormGroup>
             <FormControlLabel
@@ -1769,10 +1691,19 @@ const CustomerDashboard = () => {
         </Button>
         <Button
           variant="contained"
-          onClick={() => {
-            // Handle save profile
-            setProfileDialog(false);
-            showSnackbar('Profile updated successfully', 'success');
+          onClick={async () => {
+            try {
+              const response = await userAPI.updateProfile(profileData);
+              if (response && response.data) {
+                dispatch({ type: 'auth/updateUser', payload: response.data });
+                setProfileDialog(false);
+                showSnackbar('Profile updated successfully', 'success');
+              } else {
+                showSnackbar('Failed to update profile', 'error');
+              }
+            } catch (err) {
+              showSnackbar('Failed to update profile', 'error');
+            }
           }}
           sx={{
             bgcolor: 'primary.main',
@@ -2059,10 +1990,11 @@ const CustomerDashboard = () => {
               control={<Radio />}
               label="Cash on Delivery"
             />
+
             <FormControlLabel
-              value="card"
+              value="online"
               control={<Radio />}
-              label="Credit/Debit Card"
+              label="Online Payment"
             />
           </RadioGroup>
                 </Box>
@@ -2072,8 +2004,13 @@ const CustomerDashboard = () => {
                   <Button
           variant="contained"
           onClick={() => {
+            if (!selectedAddress && !profileData.address) {
+              setProfileDialog(true);
+              showSnackbar('Please set your address before placing an order', 'warning');
+              return;
+            }
             setCheckoutOpen(false);
-            setOrderSuccessOpen(true);
+            setAddressConfirmOpen(true);
           }}
         >
           Place Order
@@ -2160,6 +2097,22 @@ const CustomerDashboard = () => {
         </Box>
       </DialogTitle>
       <DialogContent>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          {['Ordered', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered'].map((stage, idx) => {
+            const currentIdx = ['ordered','processing','shipped','out for delivery','delivered'].indexOf((selectedOrderDetails?.status||'').toLowerCase());
+            return (
+              <Box key={stage} sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  bgcolor: idx <= currentIdx ? 'primary.main' : 'grey.300',
+                  color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700
+                }}>{idx+1}</Box>
+                <Typography sx={{ ml: 1, mr: 2, color: idx <= currentIdx ? 'primary.main' : 'grey.500', fontWeight: idx <= currentIdx ? 700 : 400 }}>{stage}</Typography>
+                {idx < 4 && <Box sx={{ width: 32, height: 4, bgcolor: idx < currentIdx ? 'primary.main' : 'grey.300', borderRadius: 2 }} />}
+              </Box>
+            );
+          })}
+        </Box>
         {selectedOrderDetails && (
           <Box sx={{ mt: 2 }}>
             <Grid container spacing={3}>
@@ -2246,6 +2199,97 @@ const CustomerDashboard = () => {
             Cancel Order
           </Button>
         )}
+      </DialogActions>
+    </Dialog>
+  );
+
+  // Add a new function to handle explicit search action
+  const handleSearchAction = () => {
+    if (searchQuery.trim()) {
+      const filtered = products.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+      setSearchHistory(prev => {
+        const newHistory = [searchQuery, ...prev.filter(item => item !== searchQuery)].slice(0, 5);
+        return newHistory;
+      });
+      if (filtered.length > 0 && productsRef.current) {
+        setTimeout(() => {
+          const firstProduct = document.querySelector(`[data-product-id='${filtered[0]._id}']`);
+          if (firstProduct) {
+            firstProduct.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstProduct.classList.add('highlight-product');
+            setTimeout(() => firstProduct.classList.remove('highlight-product'), 2000);
+          }
+        }, 200);
+      }
+    } else {
+      setFilteredProducts(products);
+    }
+  };
+
+  // Add geolocation helper
+  const handleAutoDetectLocation = () => {
+    if (!navigator.geolocation) {
+      showSnackbar('Geolocation is not supported by your browser', 'error');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const { latitude, longitude } = position.coords;
+      try {
+        // Use OpenStreetMap Nominatim API for reverse geocoding
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+        const data = await response.json();
+        if (data && data.address) {
+          setProfileData(prev => ({
+            ...prev,
+            address: data.display_name || '',
+            city: data.address.city || data.address.town || data.address.village || '',
+            state: data.address.state || '',
+            zipCode: data.address.postcode || ''
+          }));
+          showSnackbar('Location detected and address updated', 'success');
+        } else {
+          setProfileData(prev => ({
+            ...prev,
+            address: `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`
+          }));
+          showSnackbar('Location detected, but address not found', 'warning');
+        }
+      } catch (err) {
+        setProfileData(prev => ({
+          ...prev,
+          address: `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`
+        }));
+        showSnackbar('Failed to fetch address from location', 'error');
+      }
+    }, () => {
+      showSnackbar('Unable to retrieve your location', 'error');
+    });
+  };
+
+  // Address confirmation dialog
+  const renderAddressConfirmDialog = () => (
+    <Dialog open={addressConfirmOpen} onClose={() => setAddressConfirmOpen(false)} maxWidth="sm" fullWidth>
+      <DialogTitle>Confirm Delivery Address</DialogTitle>
+      <DialogContent>
+        <Typography sx={{ mb: 2 }}>Current Address:</Typography>
+        <Typography sx={{ mb: 2, fontWeight: 600 }}>{selectedAddress ? `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.zipCode}` : profileData.address}</Typography>
+        <Button variant="outlined" onClick={handleAutoDetectLocation} sx={{ mr: 1 }}>Auto-detect Location</Button>
+        <Button variant="outlined" onClick={() => setProfileDialog(true)} sx={{ mr: 1 }}>Edit Address</Button>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setAddressConfirmOpen(false)}>Cancel</Button>
+        <Button variant="contained" onClick={() => {
+          setAddressConfirmOpen(false);
+          if (paymentMethod === 'cod' || paymentMethod === 'card') {
+            handleOrderPlaced();
+          } else if (paymentMethod === 'online') {
+            setPaymentDialogOpen(true);
+          }
+        }}>Confirm & Continue</Button>
       </DialogActions>
     </Dialog>
   );
@@ -2567,175 +2611,7 @@ const CustomerDashboard = () => {
         </Box>
       </Drawer>
 
-      <Drawer
-        variant="permanent"
-        sx={{
-          display: { xs: 'none', md: 'block' }, // Show only on desktop
-          width: 320,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 320,
-            boxSizing: 'border-box',
-            background: 'linear-gradient(180deg, rgb(191, 50, 50) 0%, #FF6B6B 100%)',
-            color: 'white',
-            borderRight: 'none',
-            boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '100%',
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
-              pointerEvents: 'none'
-            }
-          },
-        }}
-      >
-        <Box sx={{ 
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}>
-          <Box sx={{ 
-            p: 3, 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2,
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(0,0,0,0.1)'
-          }}>
-            <Avatar
-              sx={{
-                width: 48,
-                height: 48,
-                bgcolor: 'white',
-                color: 'primary.main',
-                fontWeight: 600,
-                fontSize: '1.2rem',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'scale(1.05)'
-                }
-              }}
-            >
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
-            </Avatar>
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'white' }}>
-                {user?.name || 'Customer'}
-        </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                {user?.email || 'No email provided'}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Box sx={{ 
-            flexGrow: 1, 
-            overflowY: 'auto',
-            px: 2,
-            py: 3,
-            '&::-webkit-scrollbar': {
-              width: '6px',
-            },
-            '&::-webkit-scrollbar-track': {
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '3px',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '3px',
-              '&:hover': {
-                background: 'rgba(255,255,255,0.3)',
-              },
-            },
-          }}>
-            <List>
-              {menuItems.map((item, index) => (
-                <motion.div
-                  key={item.text}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <ListItem
-                    button
-                    onClick={item.onClick}
-                    sx={{
-                      borderRadius: '12px',
-                      mb: 1,
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                        transform: 'translateX(4px)',
-                      },
-                      '&.Mui-selected': {
-                        backgroundColor: 'rgba(255,255,255,0.15)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255,255,255,0.2)',
-                        }
-                      }
-                    }}
-                  >
-                    <ListItemIcon sx={{ 
-                      color: 'white', 
-                      minWidth: 40,
-                      transition: 'transform 0.2s',
-                      '&:hover': {
-                        transform: 'scale(1.1)'
-                      }
-                    }}>
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.text}
-                      primaryTypographyProps={{
-                        fontWeight: 500,
-                        fontSize: '1rem',
-                        color: 'white'
-                      }}
-                    />
-                  </ListItem>
-                </motion.div>
-              ))}
-            </List>
-          </Box>
-
-          <Box sx={{ 
-            p: 2, 
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(0,0,0,0.1)'
-          }}>
-            <ListItem
-              button
-              onClick={handleLogout}
-              sx={{
-                borderRadius: '12px',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  transform: 'translateX(4px)',
-                }
-              }}
-            >
-              <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
-                <Logout />
-              </ListItemIcon>
-              <ListItemText 
-                primary="Logout" 
-                primaryTypographyProps={{
-                  fontWeight: 500,
-                  color: 'white'
-                }}
-              />
-            </ListItem>
-          </Box>
-        </Box>
-      </Drawer>
+     
 
       <Box
         component="main"
@@ -2783,7 +2659,6 @@ const CustomerDashboard = () => {
               }}>
           {renderStats()}
           {renderLiveOrders()}
-          {renderTrendingProducts()}
           {renderRecommendations()}
           </Box>
             </Grid>
@@ -2804,6 +2679,7 @@ const CustomerDashboard = () => {
       {renderCheckout()}
       {renderOrderSuccess()}
       {renderOrderDetailsDialog()}
+      {renderAddressConfirmDialog()}
 
       <Snackbar
         open={snackbar.open}
@@ -2822,6 +2698,23 @@ const CustomerDashboard = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+      <Dialog open={paymentDialogOpen && cart.items.length > 0} onClose={() => setPaymentDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Online Payment</DialogTitle>
+        <DialogContent>
+          <RazorpayPayment
+            cart={cart}
+            user={user}
+            onPaymentSuccess={(response) => {
+              setPaymentDialogOpen(false);
+              handleOrderPlaced();
+            }}
+            onPaymentError={() => {
+              setPaymentDialogOpen(false);
+              showSnackbar('Payment failed or cancelled', 'error');
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
